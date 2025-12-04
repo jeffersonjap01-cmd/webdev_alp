@@ -1,0 +1,35 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('doctors', function (Blueprint $table) {
+            $table->id();
+
+            // Relasi ke tabel users
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+
+            // Profile dokter
+            $table->string('name');
+            $table->string('phone')->nullable();
+            $table->string('email')->nullable();
+            $table->string('specialization')->nullable();
+
+            // Status & Jadwal dokter
+            $table->boolean('is_active')->default(false);
+            $table->integer('service_duration')->nullable(); // menit per pasien
+
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('doctors');
+    }
+};
