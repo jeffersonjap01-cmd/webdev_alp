@@ -6,26 +6,24 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    public function up()
+    public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-
-            // LOGIN INFO
+            $table->string('name');
             $table->string('email')->unique();
+            $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-
-            // ROLE
-            $table->enum('role', ['admin', 'customer', 'doctor'])->default('customer');
-
-            // Untuk fitur remember me (optional)
+            $table->enum('role', ['admin', 'vet', 'owner'])->default('owner');
+            $table->foreignId('reference_id')->nullable()->comment('ID dari owners atau doctors table');
+            $table->string('reference_type')->nullable()->comment('Owner atau Doctor');
             $table->rememberToken();
-
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
-    public function down()
+    public function down(): void
     {
         Schema::dropIfExists('users');
     }
