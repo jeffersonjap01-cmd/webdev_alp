@@ -50,20 +50,20 @@
                         @enderror
                     </div>
 
-                    <!-- Type -->
+                    <!-- Species -->
                     <div>
-                        <label for="type" class="block text-sm font-medium text-gray-700">Jenis Hewan *</label>
-                        <select name="type" id="type" required class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md @error('type') border-red-300 @enderror">
+                        <label for="species" class="block text-sm font-medium text-gray-700">Jenis Hewan *</label>
+                        <select name="species" id="species" required class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md @error('species') border-red-300 @enderror">
                             <option value="">Pilih Jenis Hewan</option>
-                            <option value="Dog" {{ old('type', $pet->type) == 'Dog' ? 'selected' : '' }}>Anjing</option>
-                            <option value="Cat" {{ old('type', $pet->type) == 'Cat' ? 'selected' : '' }}>Kucing</option>
-                            <option value="Bird" {{ old('type', $pet->type) == 'Bird' ? 'selected' : '' }}>Burung</option>
-                            <option value="Rabbit" {{ old('type', $pet->type) == 'Rabbit' ? 'selected' : '' }}>Kelinci</option>
-                            <option value="Hamster" {{ old('type', $pet->type) == 'Hamster' ? 'selected' : '' }}>Hamster</option>
-                            <option value="Fish" {{ old('type', $pet->type) == 'Fish' ? 'selected' : '' }}>Ikan</option>
-                            <option value="Other" {{ old('type', $pet->type) == 'Other' ? 'selected' : '' }}>Lainnya</option>
+                            <option value="Dog" {{ old('species', $pet->species) == 'Dog' ? 'selected' : '' }}>Anjing</option>
+                            <option value="Cat" {{ old('species', $pet->species) == 'Cat' ? 'selected' : '' }}>Kucing</option>
+                            <option value="Bird" {{ old('species', $pet->species) == 'Bird' ? 'selected' : '' }}>Burung</option>
+                            <option value="Rabbit" {{ old('species', $pet->species) == 'Rabbit' ? 'selected' : '' }}>Kelinci</option>
+                            <option value="Hamster" {{ old('species', $pet->species) == 'Hamster' ? 'selected' : '' }}>Hamster</option>
+                            <option value="Fish" {{ old('species', $pet->species) == 'Fish' ? 'selected' : '' }}>Ikan</option>
+                            <option value="Other" {{ old('species', $pet->species) == 'Other' ? 'selected' : '' }}>Lainnya</option>
                         </select>
-                        @error('type')
+                        @error('species')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>

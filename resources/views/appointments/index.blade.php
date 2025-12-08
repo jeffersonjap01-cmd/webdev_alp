@@ -125,7 +125,7 @@
                                     {{ $appointment->pet->owner->name ?? 'Unknown Owner' }}
                                 </p>
                                 <p class="text-sm text-gray-500">
-                                    {{ $appointment->pet->type ?? 'Unknown Type' }}
+                                    {{ $appointment->pet->species ?? 'Unknown Species' }}
                                 </p>
                             </div>
                         </div>

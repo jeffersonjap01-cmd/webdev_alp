@@ -28,4 +28,12 @@ class Customer extends Model
     {
         return $this->hasMany(Pet::class);
     }
+
+    // Scopes
+    public function scopeActive($query)
+    {
+        return $query->whereHas('user', function($q) {
+            $q->where('status', 'active');
+        });
+    }
 }

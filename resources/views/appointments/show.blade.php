@@ -181,7 +181,7 @@
                         </div>
                         <div>
                             <dt class="text-sm font-medium text-gray-500">Jenis</dt>
-                            <dd class="mt-1 text-sm text-gray-900">{{ $appointment->pet->type ?? 'Unknown' }}</dd>
+                            <dd class="mt-1 text-sm text-gray-900">{{ $appointment->pet->species ?? 'Unknown' }}</dd>
                         </div>
                         <div>
                             <dt class="text-sm font-medium text-gray-500">Breed</dt>

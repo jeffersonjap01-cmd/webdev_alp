@@ -30,16 +30,16 @@
         <div class="px-4 py-5 sm:p-6">
             <form method="GET" action="{{ route('pets') }}" class="grid grid-cols-1 gap-4 sm:grid-cols-4">
                 <div>
-                    <label for="type" class="block text-sm font-medium text-gray-700">Jenis Hewan</label>
-                    <select name="type" id="type" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                    <label for="species" class="block text-sm font-medium text-gray-700">Jenis Hewan</label>
+                    <select name="species" id="species" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
                         <option value="">Semua Jenis</option>
-                        <option value="Dog" {{ request('type') == 'Dog' ? 'selected' : '' }}>Anjing</option>
-                        <option value="Cat" {{ request('type') == 'Cat' ? 'selected' : '' }}>Kucing</option>
-                        <option value="Bird" {{ request('type') == 'Bird' ? 'selected' : '' }}>Burung</option>
-                        <option value="Rabbit" {{ request('type') == 'Rabbit' ? 'selected' : '' }}>Kelinci</option>
-                        <option value="Hamster" {{ request('type') == 'Hamster' ? 'selected' : '' }}>Hamster</option>
-                        <option value="Fish" {{ request('type') == 'Fish' ? 'selected' : '' }}>Ikan</option>
-                        <option value="Other" {{ request('type') == 'Other' ? 'selected' : '' }}>Lainnya</option>
+                        <option value="Dog" {{ request('species') == 'Dog' ? 'selected' : '' }}>Anjing</option>
+                        <option value="Cat" {{ request('species') == 'Cat' ? 'selected' : '' }}>Kucing</option>
+                        <option value="Bird" {{ request('species') == 'Bird' ? 'selected' : '' }}>Burung</option>
+                        <option value="Rabbit" {{ request('species') == 'Rabbit' ? 'selected' : '' }}>Kelinci</option>
+                        <option value="Hamster" {{ request('species') == 'Hamster' ? 'selected' : '' }}>Hamster</option>
+                        <option value="Fish" {{ request('species') == 'Fish' ? 'selected' : '' }}>Ikan</option>
+                        <option value="Other" {{ request('species') == 'Other' ? 'selected' : '' }}>Lainnya</option>
                     </select>
                 </div>
                 
@@ -47,7 +47,7 @@
                     <label for="owner" class="block text-sm font-medium text-gray-700">Pemilik</label>
                     <select name="owner" id="owner" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
                         <option value="">Semua Pemilik</option>
-                        @foreach(\App\Models\Owner::active()->get() as $owner)
+                        @foreach(\App\Models\Customer::active()->get() as $owner)
                             <option value="{{ $owner->id }}" {{ request('owner') == $owner->id ? 'selected' : '' }}>
                                 {{ $owner->name }}
                             </option>
@@ -93,14 +93,14 @@
                                         </p>
                                         <div class="ml-2 flex-shrink-0 flex">
                                             <p class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                                @switch($pet->type)
+                                                @switch($pet->species)
                                                     @case('Dog') bg-yellow-100 text-yellow-800 @break
                                                     @case('Cat') bg-green-100 text-green-800 @break
                                                     @case('Bird') bg-blue-100 text-blue-800 @break
                                                     @default bg-gray-100 text-gray-800
                                                 @endswitch
                                             ">
-                                                {{ $pet->type }}
+                                                {{ $pet->species }}
                                             </p>
                                         </div>
                                     </div>

@@ -28,9 +28,15 @@ class Pet extends Model
     ];
 
     // Relationships
+    public function customer()
+    {
+        return $this->belongsTo(Customer::class, 'customer_id');
+    }
+
+    // Alias for customer relationship (for backward compatibility)
     public function owner()
     {
-        return $this->belongsTo(Owner::class, 'customer_id');
+        return $this->belongsTo(Customer::class, 'customer_id');
     }
 
     public function medicalRecords()

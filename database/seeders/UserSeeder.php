@@ -15,56 +15,70 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         // Create admin user
-        User::create([
-            'name' => 'Administrator',
-            'email' => 'admin@vetcare.com',
-            'password' => Hash::make('password'),
-            'role' => 'admin',
-        ]);
+        User::firstOrCreate(
+            ['email' => 'admin@vetcare.com'],
+            [
+                'name' => 'Administrator',
+                'password' => Hash::make('password'),
+                'role' => 'admin',
+            ]
+        );
 
         // Create vet users
-        User::create([
-            'name' => 'Dr. Ahmad Rizki',
-            'email' => 'vet@vetcare.com',
-            'password' => Hash::make('password'),
-            'role' => 'vet',
-        ]);
+        User::firstOrCreate(
+            ['email' => 'vet@vetcare.com'],
+            [
+                'name' => 'Dr. Ahmad Rizki',
+                'password' => Hash::make('password'),
+                'role' => 'vet',
+            ]
+        );
 
-        User::create([
-            'name' => 'Dr. Sari Indrawati',
-            'email' => 'vet2@vetcare.com',
-            'password' => Hash::make('password'),
-            'role' => 'vet',
-        ]);
+        User::firstOrCreate(
+            ['email' => 'vet2@vetcare.com'],
+            [
+                'name' => 'Dr. Sari Indrawati',
+                'password' => Hash::make('password'),
+                'role' => 'vet',
+            ]
+        );
 
         // Create owner users
-        User::create([
-            'name' => 'Budi Santoso',
-            'email' => 'owner@vetcare.com',
-            'password' => Hash::make('password'),
-            'role' => 'owner',
-        ]);
+        User::firstOrCreate(
+            ['email' => 'owner@vetcare.com'],
+            [
+                'name' => 'Budi Santoso',
+                'password' => Hash::make('password'),
+                'role' => 'owner',
+            ]
+        );
 
-        User::create([
-            'name' => 'Siti Sarah',
-            'email' => 'owner2@vetcare.com',
-            'password' => Hash::make('password'),
-            'role' => 'owner',
-        ]);
+        User::firstOrCreate(
+            ['email' => 'owner2@vetcare.com'],
+            [
+                'name' => 'Siti Sarah',
+                'password' => Hash::make('password'),
+                'role' => 'owner',
+            ]
+        );
 
-        User::create([
-            'name' => 'Ahmad Wijaya',
-            'email' => 'owner3@vetcare.com',
-            'password' => Hash::make('password'),
-            'role' => 'owner',
-        ]);
+        User::firstOrCreate(
+            ['email' => 'owner3@vetcare.com'],
+            [
+                'name' => 'Ahmad Wijaya',
+                'password' => Hash::make('password'),
+                'role' => 'owner',
+            ]
+        );
 
         // Create test user for mk@gmail.com
-        User::create([
-            'name' => 'Test User',
-            'email' => 'mk@gmail.com',
-            'password' => Hash::make('password'),
-            'role' => 'owner',
-        ]);
+        User::firstOrCreate(
+            ['email' => 'mk@gmail.com'],
+            [
+                'name' => 'Test User',
+                'password' => Hash::make('password'),
+                'role' => 'owner',
+            ]
+        );
     }
 }

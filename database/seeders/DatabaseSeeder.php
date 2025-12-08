@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             DoctorSeeder::class,
             OwnerSeeder::class,
+            CustomerSeeder::class,
             PetSeeder::class,
         ]);
     }

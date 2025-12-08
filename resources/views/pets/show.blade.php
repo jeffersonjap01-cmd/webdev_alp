@@ -65,7 +65,7 @@
                         </div>
                         <div>
                             <dt class="text-sm font-medium text-gray-500">Jenis</dt>
-                            <dd class="mt-1 text-sm text-gray-900">{{ $pet->type }}</dd>
+                            <dd class="mt-1 text-sm text-gray-900">{{ $pet->species }}</dd>
                         </div>
                         <div>
                             <dt class="text-sm font-medium text-gray-500">Breed</dt>
