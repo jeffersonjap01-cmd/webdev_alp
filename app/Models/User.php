@@ -30,9 +30,9 @@ class User extends Authenticatable
     ];
 
     // Relationships
-    public function owner()
+    public function customer()
     {
-        return $this->hasOne(Owner::class);
+        return $this->hasOne(Customer::class);
     }
 
     public function doctor()

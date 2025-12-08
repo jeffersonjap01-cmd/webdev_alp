@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Customer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -109,15 +110,14 @@ class AuthController extends Controller
             'role' => $validated['role'],
         ]);
 
-        // Create owner profile if role is owner
+        // Create customer profile if role is owner
         if ($validated['role'] === 'owner') {
-            \App\Models\Owner::create([
+            \App\Models\Customer::create([
                 'user_id' => $user->id,
                 'name' => $validated['name'],
                 'email' => $validated['email'],
                 'phone' => $validated['phone'] ?? null,
                 'address' => $validated['address'] ?? null,
-                'registered_date' => now(),
             ]);
         }
 

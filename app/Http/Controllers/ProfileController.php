@@ -68,7 +68,7 @@ class ProfileController extends Controller
                 $data['admin_info'] = [
                     'total_users' => User::count(),
                     'total_doctors' => \App\Models\Doctor::count(),
-                    'total_owners' => \App\Models\Owner::count(),
+                    'total_owners' => \App\Models\Customer::count(),
                     'total_appointments' => \App\Models\Appointment::count(),
                 ];
                 break;

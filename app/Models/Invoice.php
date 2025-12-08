@@ -36,7 +36,7 @@ class Invoice extends Model
     // Relationships
     public function owner()
     {
-        return $this->belongsTo(Owner::class);
+        return $this->belongsTo(Customer::class);
     }
 
     public function pet()

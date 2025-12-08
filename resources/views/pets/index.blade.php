@@ -28,7 +28,7 @@
     <!-- Filters -->
     <div class="bg-white shadow rounded-lg mb-6">
         <div class="px-4 py-5 sm:p-6">
-            <form method="GET" action="{{ route('pets') }}" class="grid grid-cols-1 gap-4 sm:grid-cols-4">
+            <form method="GET" action="{{ route('pets.index') }}" class="grid grid-cols-1 gap-4 sm:grid-cols-4">
                 <div>
                     <label for="species" class="block text-sm font-medium text-gray-700">Jenis Hewan</label>
                     <select name="species" id="species" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">

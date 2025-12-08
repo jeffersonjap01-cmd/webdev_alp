@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use App\Models\Owner;
+use App\Models\Customer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
@@ -15,7 +15,7 @@ class CustomerController extends Controller
     }
 
     /**
-     * Register a new owner (Guest)
+     * Register a new customer (Guest)
      */
     public function register(Request $request)
     {
@@ -27,7 +27,7 @@ class CustomerController extends Controller
             'address'  => 'nullable|string',
         ]);
 
-        // 1. Buat user (login)
+        // 1. Create user (login)
         $user = User::create([
             'email'    => $request->email,
             'password' => Hash::make($request->password),
@@ -35,15 +35,13 @@ class CustomerController extends Controller
             'role'     => 'owner',
         ]);
 
-        // 2. Buat profile owner
-        $owner = Owner::create([
+        // 2. Create profile customer
+        $customer = Customer::create([
             'user_id' => $user->id,
             'name'    => $request->name,
             'phone'   => $request->phone,
             'email'   => $request->email,
             'address' => $request->address,
-            'registered_date' => now(),
-            'status' => 'active',
         ]);
 
         auth()->login($user);
@@ -52,37 +50,37 @@ class CustomerController extends Controller
     }
 
     /**
-     * Get all owners (Admin only)
+     * Get all customers (Admin only)
      */
     public function index(Request $request)
     {
-        $query = Owner::query()->with(['user']);
+        $query = Customer::query()->with(['user']);
 
         // Search functionality
         if ($request->has('search')) {
             $query->search($request->search);
         }
 
-        $owners = $query->latest()->paginate(15);
+        $customers = $query->latest()->paginate(15);
 
-        return view('owners.index', compact('owners'));
+        return view('owners.index', compact('customers'));
     }
 
     /**
-     * Show a single owner
+     * Show a single customer
      */
-    public function show(Owner $owner)
+    public function show(Customer $customer)
     {
-        // Admin can see all owners, owner can only see own profile
-        if (auth()->user()->role === 'owner' && auth()->user()->owner->id !== $owner->id) {
+        // Admin can see all customers, owner can only see own profile
+        if (auth()->user()->role === 'owner' && auth()->user()->customer->id !== $customer->id) {
             abort(403, 'Anda tidak memiliki akses untuk melihat profil ini.');
         }
 
-        return view('owners.show', compact('owner'));
+        return view('owners.show', compact('customer'));
     }
 
     /**
-     * Show the form for creating a new owner (Admin only)
+     * Show the form for creating a new customer (Admin only)
      */
     public function create()
     {
@@ -90,7 +88,7 @@ class CustomerController extends Controller
     }
 
     /**
-     * Store a new owner (Admin only)
+     * Store a new customer (Admin only)
      */
     public function store(Request $request)
     {
@@ -110,68 +108,66 @@ class CustomerController extends Controller
             'role' => 'owner',
         ]);
 
-        // Create owner profile
-        $owner = Owner::create([
+        // Create customer profile
+        $customer = Customer::create([
             'user_id' => $user->id,
             'name' => $validated['name'],
             'email' => $validated['email'],
             'phone' => $validated['phone'],
             'address' => $validated['address'],
-            'status' => 'active',
-            'registered_date' => now(),
         ]);
 
-        return redirect()->route('owners')->with('success', 'Pemilik berhasil ditambahkan!');
+        return redirect()->route('owners')->with('success', 'Customer berhasil ditambahkan!');
     }
 
     /**
-     * Show the form for editing an owner (Admin only)
+     * Show the form for editing a customer (Admin only)
      */
-    public function edit(Owner $owner)
+    public function edit(Customer $customer)
     {
-        return view('owners.edit', compact('owner'));
+        return view('owners.edit', compact('customer'));
     }
 
     /**
-     * Update owner
+     * Update customer
      */
-    public function update(Request $request, Owner $owner)
+    public function update(Request $request, Customer $customer)
     {
-        // Admin can edit any owner, owner can only edit own profile
-        if (auth()->user()->role === 'owner' && auth()->user()->owner->id !== $owner->id) {
+        // Admin can edit any customer, owner can only edit own profile
+        if (auth()->user()->role === 'owner' && auth()->user()->customer->id !== $customer->id) {
             abort(403, 'Anda tidak memiliki akses untuk mengedit profil ini.');
         }
 
         $validated = $request->validate([
             'name' => 'sometimes|string|max:255',
-            'email' => 'sometimes|email|unique:owners,email,' . $owner->id,
+            'email' => 'sometimes|email|unique:customers,email,' . $customer->id,
             'phone' => 'sometimes|string|max:20',
             'address' => 'sometimes|string',
         ]);
 
-        $owner->update($validated);
+        $customer->update($validated);
 
         // Update user name if changed
         if (isset($validated['name'])) {
-            $owner->user->update(['name' => $validated['name']]);
+            $customer->user->update(['name' => $validated['name']]);
         }
 
-        $message = auth()->user()->role === 'owner' ? 'Profil berhasil diperbarui!' : 'Pemilik berhasil diperbarui!';
-        return redirect()->route('owners.show', $owner)->with('success', $message);
+        $message = auth()->user()->role === 'owner' ? 'Profil berhasil diperbarui!' : 'Customer berhasil diperbarui!';
+        return redirect()->route('owners.show', $customer)->with('success', $message);
     }
 
     /**
-     * Delete owner (Admin only)
+     * Delete customer (Admin only)
      */
-    public function destroy(Owner $owner)
+    public function destroy(Customer $customer)
     {
-        // Check if owner has appointments
-        if ($owner->appointments()->exists()) {
-            return back()->with('error', 'Tidak dapat menghapus pemilik yang masih memiliki janji temu.');
+        // Check if customer has appointments
+        if ($customer->appointments()->exists()) {
+            return back()->with('error', 'Tidak dapat menghapus customer yang masih memiliki janji temu.');
         }
 
-        $owner->delete();
+        $customer->delete();
 
-        return redirect()->route('owners')->with('success', 'Pemilik berhasil dihapus!');
+        return redirect()->route('owners')->with('success', 'Customer berhasil dihapus!');
     }
 }

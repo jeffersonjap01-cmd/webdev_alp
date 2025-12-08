@@ -36,7 +36,7 @@ class Appointment extends Model
 
     public function owner()
     {
-        return $this->hasOneThrough(Owner::class, Pet::class, 'id', 'id', 'pet_id', 'customer_id');
+        return $this->hasOneThrough(Customer::class, Pet::class, 'id', 'id', 'pet_id', 'customer_id');
     }
 
     // Scopes

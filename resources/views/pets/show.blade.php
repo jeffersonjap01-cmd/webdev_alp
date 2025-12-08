@@ -37,15 +37,23 @@
                 </div>
             </div>
             <div class="mt-4 flex md:mt-0 md:ml-4">
-                <a href="{{ route('pets') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                <a href="{{ route('pets.index') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                     <i class="fas fa-arrow-left mr-2"></i>
                     Kembali
                 </a>
                 @if(in_array(auth()->user()->role, ['admin', 'owner']))
-                <a href="{{ route('pets.edit', $pet) }}" class="ml-3 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                <button id="editPetBtn" onclick="toggleEditMode()" class="ml-3 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                     <i class="fas fa-edit mr-2"></i>
                     Edit
-                </a>
+                </button>
+                <button id="savePetBtn" onclick="savePet()" style="display: none;" class="ml-3 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                    <i class="fas fa-save mr-2"></i>
+                    Save
+                </button>
+                <button id="cancelEditBtn" onclick="cancelEdit()" style="display: none;" class="ml-3 inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    <i class="fas fa-times mr-2"></i>
+                    Cancel
+                </button>
                 @endif
             </div>
         </div>
@@ -58,7 +66,8 @@
             <div class="bg-white shadow rounded-lg">
                 <div class="px-4 py-5 sm:p-6">
                     <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Informasi Hewan</h3>
-                    <dl class="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
+                    <div class="pet-info">
+                        <dl class="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
                         <div>
                             <dt class="text-sm font-medium text-gray-500">Nama</dt>
                             <dd class="mt-1 text-sm text-gray-900">{{ $pet->name }}</dd>
@@ -114,6 +123,7 @@
                         </div>
                         @endif
                     </dl>
+                    </div>
                 </div>
             </div>
 
@@ -122,7 +132,7 @@
                 <div class="px-4 py-5 sm:p-6">
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="text-lg leading-6 font-medium text-gray-900">Rekam Medis</h3>
-                        <a href="{{ route('pets.medical-records', $pet) }}" class="text-sm text-blue-600 hover:text-blue-500">
+                        <a href="{{ route('pets.medical-records', ['pet' => $pet->id]) }}" class="text-sm text-blue-600 hover:text-blue-500">
                             Lihat Semua
                         </a>
                     </div>
@@ -246,7 +256,7 @@
                         @endif
                     </dl>
                     <div class="mt-4">
-                        <a href="{{ route('owners.show', $pet->owner) }}" class="w-full inline-flex justify-center items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                        <a href="{{ route('customers.show', $pet->owner) }}" class="w-full inline-flex justify-center items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
                             <i class="fas fa-user mr-2"></i>
                             Lihat Profil Pemilik
                         </a>
@@ -300,7 +310,7 @@
                         </a>
                         @endif
                         
-                        <a href="{{ route('pets.medical-records', $pet) }}" class="w-full inline-flex justify-center items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                        <a href="{{ route('pets.medical-records', ['pet' => $pet->id]) }}" class="w-full inline-flex justify-center items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
                             <i class="fas fa-history mr-2"></i>
                             Lihat Riwayat
                         </a>
@@ -311,3 +321,114 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+function toggleEditMode() {
+    // Hide edit button, show save and cancel buttons
+    document.getElementById('editPetBtn').style.display = 'none';
+    document.getElementById('savePetBtn').style.display = 'inline-flex';
+    document.getElementById('cancelEditBtn').style.display = 'inline-flex';
+    
+    // Convert pet information to editable form
+    const petInfo = document.querySelector('.pet-info');
+    if (petInfo) {
+        petInfo.innerHTML = `
+            <form id="editPetForm" action="{{ route('pets.update', $pet) }}" method="POST" class="space-y-4">
+                @csrf
+                @method('PUT')
+                
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Nama Hewan</label>
+                        <input type="text" name="name" value="{{ $pet->name }}"
+                               class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Jenis Hewan</label>
+                        <select name="species" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                            <option value="Dog" {{ $pet->species == 'Dog' ? 'selected' : '' }}>Anjing</option>
+                            <option value="Cat" {{ $pet->species == 'Cat' ? 'selected' : '' }}>Kucing</option>
+                            <option value="Bird" {{ $pet->species == 'Bird' ? 'selected' : '' }}>Burung</option>
+                            <option value="Rabbit" {{ $pet->species == 'Rabbit' ? 'selected' : '' }}>Kelinci</option>
+                            <option value="Hamster" {{ $pet->species == 'Hamster' ? 'selected' : '' }}>Hamster</option>
+                            <option value="Fish" {{ $pet->species == 'Fish' ? 'selected' : '' }}>Ikan</option>
+                            <option value="Other" {{ $pet->species == 'Other' ? 'selected' : '' }}>Lainnya</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Breed/Ras</label>
+                        <input type="text" name="breed" value="{{ $pet->breed ?? '' }}"
+                               class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Umur (tahun)</label>
+                        <input type="number" name="age" value="{{ $pet->age ?? '' }}" min="0" max="50"
+                               class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Berat (kg)</label>
+                        <input type="number" name="weight" value="{{ $pet->weight ?? '' }}" min="0" step="0.1"
+                               class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Jenis Kelamin</label>
+                        <select name="gender" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                            <option value="male" {{ $pet->gender == 'male' ? 'selected' : '' }}>Jantan</option>
+                            <option value="female" {{ $pet->gender == 'female' ? 'selected' : '' }}>Betina</option>
+                            <option value="unknown" {{ $pet->gender == 'unknown' ? 'selected' : '' }}>Unknown</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Warna</label>
+                        <input type="text" name="color" value="{{ $pet->color ?? '' }}"
+                               class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Tanggal Lahir</label>
+                        <input type="date" name="birth_date" value="{{ $pet->birth_date ? $pet->birth_date->format('Y-m-d') : '' }}"
+                               max="{{ date('Y-m-d') }}"
+                               class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Status</label>
+                        <select name="status" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                            <option value="active" {{ $pet->status == 'active' ? 'selected' : '' }}>Aktif</option>
+                            <option value="inactive" {{ $pet->status == 'inactive' ? 'selected' : '' }}>Nonaktif</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Catatan</label>
+                    <textarea name="notes" rows="3"
+                              class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">{{ $pet->notes ?? '' }}</textarea>
+                </div>
+            </form>
+        `;
+    }
+}
+
+function savePet() {
+    const form = document.getElementById('editPetForm');
+    if (form) {
+        form.submit();
+    }
+}
+
+function cancelEdit() {
+    // Reload the page to cancel editing
+    window.location.reload();
+}
+</script>
+@endpush

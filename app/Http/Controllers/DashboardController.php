@@ -29,7 +29,7 @@ class DashboardController extends Controller
     private function getAdminStats()
     {
         return [
-            'total_owners' => Owner::count(),
+            'total_owners' => \App\Models\Customer::count(),
             'total_pets' => Pet::count(),
             'total_doctors' => Doctor::where('is_active', true)->count(),
             'today_appointments' => Appointment::whereDate('appointment_time', today())->count(),
@@ -71,7 +71,7 @@ class DashboardController extends Controller
 
     private function getOwnerStats($user)
     {
-        $owner = $user->owner ?? Owner::where('user_id', $user->id)->first();
+        $owner = $user->customer ?? \App\Models\Customer::where('user_id', $user->id)->first();
         
         if (!$owner) {
             return $this->getDefaultStats();

@@ -118,7 +118,7 @@
                     @endif
                     
                     @if(in_array(auth()->user()->role, ['admin', 'owner']))
-                        <a href="{{ route('pets') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-green-700 bg-green-100 hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                        <a href="{{ route('pets.index') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-green-700 bg-green-100 hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
                             <i class="fas fa-paw mr-2"></i>
                             Lihat Hewan
                         </a>

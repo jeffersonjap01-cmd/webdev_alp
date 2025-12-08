@@ -38,39 +38,35 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile');
 });
 
-// Owners routes (Admin for management, all for viewing)
+// Customers routes (Admin for management, all for viewing)
 Route::middleware('auth')->group(function () {
-    Route::get('/owners', [CustomerController::class, 'index'])->name('owners');
-    Route::get('/owners/{owner}', [CustomerController::class, 'show'])->name('owners.show');
+    Route::get('/customers', [CustomerController::class, 'index'])->name('customers');
+    Route::get('/customers/{customer}', [CustomerController::class, 'show'])->name('customers.show');
     
     Route::middleware('role:admin')->group(function () {
-        Route::get('/owners/create', [CustomerController::class, 'create'])->name('owners.create');
-        Route::post('/owners', [CustomerController::class, 'store'])->name('owners.store');
-        Route::get('/owners/{owner}/edit', [CustomerController::class, 'edit'])->name('owners.edit');
-        Route::put('/owners/{owner}', [CustomerController::class, 'update'])->name('owners.update');
-        Route::delete('/owners/{owner}', [CustomerController::class, 'destroy'])->name('owners.destroy');
+        Route::get('/customers/create', [CustomerController::class, 'create'])->name('customers.create');
+        Route::post('/customers', [CustomerController::class, 'store'])->name('customers.store');
+        Route::get('/customers/{customer}/edit', [CustomerController::class, 'edit'])->name('customers.edit');
+        Route::put('/customers/{customer}', [CustomerController::class, 'update'])->name('customers.update');
+        Route::delete('/customers/{customer}', [CustomerController::class, 'destroy'])->name('customers.destroy');
     });
     
-    // Guest registration (creates owner)
-    Route::post('/owners/register', [CustomerController::class, 'register'])->name('owners.register');
+    // Guest registration (creates customer)
+    Route::post('/customers/register', [CustomerController::class, 'register'])->name('customers.register');
 });
+
+// Legacy owners routes (redirect to customers)
+Route::redirect('/owners', '/customers');
+Route::redirect('/owners/{id}', '/customers/{id}');
 
 // Pets routes
 Route::middleware('auth')->group(function () {
-    Route::get('/pets', [PetController::class, 'index'])->name('pets');
-    Route::get('/pets/{pet}', [PetController::class, 'show'])->name('pets.show');
-    
-    Route::middleware('role:owner')->group(function () {
-        Route::get('/pets/create', [PetController::class, 'create'])->name('pets.create');
-        Route::post('/pets', [PetController::class, 'store'])->name('pets.store');
-        Route::get('/pets/{pet}/edit', [PetController::class, 'edit'])->name('pets.edit');
-        Route::put('/pets/{pet}', [PetController::class, 'update'])->name('pets.update');
-        Route::delete('/pets/{pet}', [PetController::class, 'destroy'])->name('pets.destroy');
-    });
-    
-    Route::get('/pets/customer/{id}', [PetController::class, 'petsByCustomer'])->name('pets.customer');
-    Route::get('/pets/{pet}/medical-records', [MedicalRecordController::class, 'byPet'])->name('pets.medical-records');
+    // specific pet sub-routes first
     Route::get('/pets/{pet}/prescriptions', [PrescriptionController::class, 'byPet'])->name('pets.prescriptions');
+    Route::get('/pets/{pet}/medical-records', [MedicalRecordController::class, 'byPet'])->name('pets.medical-records');
+
+    // register standard CRUD routes for pets
+    Route::resource('pets', PetController::class);
 });
 
 // Doctors routes (all can view, admin manages)
@@ -181,10 +177,6 @@ Route::middleware('auth')->middleware('role:admin')->group(function () {
     Route::get('/reports/vaccinations', [ReportController::class, 'vaccinations'])->name('reports.vaccinations');
     Route::get('/reports/export/{type}', [ReportController::class, 'export'])->name('reports.export');
 });
-
-// Legacy customer routes (redirect to owners)
-Route::redirect('/customers', '/owners');
-Route::redirect('/customers/{id}', '/owners/{id}');
 
 // API routes (for external API access)
 Route::prefix('api')->middleware('auth:sanctum')->group(function () {

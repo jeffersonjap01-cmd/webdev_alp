@@ -6,7 +6,7 @@
 </a>
 
 <!-- Pets - All authenticated users -->
-<a href="{{ route('pets') }}" class="group flex items-center px-2 py-2 text-sm font-medium rounded-md {{ request()->routeIs('pets*') ? 'bg-blue-100 text-blue-900' : 'text-gray-600 hover:bg-gray-500 hover:text-gray-900' }}">
+<a href="{{ route('pets.index') }}" class="group flex items-center px-2 py-2 text-sm font-medium rounded-md {{ request()->routeIs('pets*') ? 'bg-blue-100 text-blue-900' : 'text-gray-600 hover:bg-gray-500 hover:text-gray-900' }}">
     <i class="fas fa-paw mr-3 {{ request()->routeIs('pets*') ? 'text-blue-500' : 'text-gray-400 group-hover:text-gray-500' }}"></i>
     Hewan
 </a>

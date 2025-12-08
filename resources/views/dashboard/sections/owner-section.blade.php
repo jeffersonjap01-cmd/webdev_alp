@@ -42,7 +42,7 @@
                 </div>
             </div>
             <div class="mt-4">
-                <a href="{{ route('pets') }}" class="text-sm text-blue-600 hover:text-blue-500">
+                <a href="{{ route('pets.index') }}" class="text-sm text-blue-600 hover:text-blue-500">
                     Kelola Semua Hewan →
                 </a>
             </div>
@@ -113,7 +113,7 @@
         </div>
     </a>
 
-    <a href="{{ route('pets') }}" class="bg-white overflow-hidden shadow rounded-lg hover:shadow-md transition-shadow duration-200">
+    <a href="{{ route('pets.index') }}" class="bg-white overflow-hidden shadow rounded-lg hover:shadow-md transition-shadow duration-200">
         <div class="p-5">
             <div class="flex items-center">
                 <div class="flex-shrink-0">

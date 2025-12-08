@@ -33,7 +33,7 @@ class Customer extends Model
     public function scopeActive($query)
     {
         return $query->whereHas('user', function($q) {
-            $q->where('status', 'active');
+            $q->whereNull('deleted_at');
         });
     }
 }

@@ -352,7 +352,7 @@
                                 </a>
                             </div>
                             <div class="col-md-4 mb-3">
-                                <a href="{{ route('pets') }}" class="btn btn-info btn-block">
+                                <a href="{{ route('pets.index') }}" class="btn btn-info btn-block">
                                     <i class="fas fa-paw"></i> Lihat Hewan Peliharaan
                                 </a>
                             </div>

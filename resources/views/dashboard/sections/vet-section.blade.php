@@ -172,7 +172,7 @@
 
 <!-- Vet Action Cards -->
 <div class="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-    <a href="{{ route('pets') }}" class="bg-white overflow-hidden shadow rounded-lg hover:shadow-md transition-shadow duration-200">
+    <a href="{{ route('pets.index') }}" class="bg-white overflow-hidden shadow rounded-lg hover:shadow-md transition-shadow duration-200">
         <div class="p-5">
             <div class="flex items-center">
                 <div class="flex-shrink-0">

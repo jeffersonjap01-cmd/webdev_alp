@@ -10,7 +10,7 @@
     <!-- Header -->
     <div class="mb-6">
         <div class="flex items-center">
-            <a href="{{ route('pets') }}" class="text-blue-600 hover:text-blue-800 mr-4">
+            <a href="{{ route('pets.index') }}" class="text-blue-600 hover:text-blue-800 mr-4">
                 <i class="fas fa-arrow-left"></i>
             </a>
             <div>
@@ -118,7 +118,7 @@
 
             <!-- Submit Buttons -->
             <div class="mt-6 flex justify-end space-x-3">
-                <a href="{{ route('pets') }}"
+                <a href="{{ route('pets.index') }}"
                    class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                     <i class="fas fa-times mr-2"></i>
                     Batal

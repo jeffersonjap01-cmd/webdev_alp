@@ -3,8 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Pet;
-use App\Models\Owner;
+use App\Models\Customer;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class PetController extends Controller
 {
@@ -18,37 +19,8 @@ class PetController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Pet::query()->with('owner');
-
-        // Role-based filtering
-        if (auth()->user()->role === 'owner' && auth()->user()->owner) {
-            // Owner can only see their own pets
-            $query->where('customer_id', auth()->user()->owner->id);
-        } elseif (auth()->user()->role === 'vet') {
-            // Vet can see all pets (for medical records)
-            // No additional filtering needed
-        } elseif (auth()->user()->role === 'admin') {
-            // Admin can see all pets
-            // No additional filtering needed
-        }
-
-        // Search functionality
-        if ($request->has('search')) {
-            $query->search($request->search);
-        }
-
-        // Filter by species
-        if ($request->has('species')) {
-            $query->where('species', $request->species);
-        }
-
-        // Filter by owner (admin only)
-        if ($request->has('customer_id') && auth()->user()->role === 'admin') {
-            $query->where('customer_id', $request->customer_id);
-        }
-
-        $pets = $query->latest()->paginate(15);
-
+        $customer = Customer::where('user_id', Auth::id())->first();
+        $pets = $customer ? Pet::where('customer_id', $customer->id)->paginate(10) : collect([]);
         return view('pets.index', compact('pets'));
     }
 
@@ -57,142 +29,110 @@ class PetController extends Controller
      */
     public function create()
     {
-        // Only owners can create pets for themselves
-        if (auth()->user()->role !== 'owner' || !auth()->user()->owner) {
-            abort(403, 'Hanya pemilik yang dapat menambahkan hewan peliharaan.');
-        }
-
         return view('pets.create');
     }
 
     /**
-     * Store a newly created pet
+     * Store a newly created pet in storage.
      */
     public function store(Request $request)
     {
-        // Only owners can create pets for themselves
-        if (auth()->user()->role !== 'owner' || !auth()->user()->owner) {
-            abort(403, 'Hanya pemilik yang dapat menambahkan hewan peliharaan.');
-        }
-
-        $validated = $request->validate([
-            'name'    => 'required|string|max:255',
-            'species' => 'required|string',
-            'breed'   => 'nullable|string|max:255',
-            'age'     => 'nullable|numeric|min:0|max:50',
-            'weight'  => 'nullable|numeric|min:0|max:200',
-            'gender'  => 'nullable|string|in:male,female,unknown',
-            'color'   => 'nullable|string|max:255',
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'species' => 'required|string|max:255',
+            'breed' => 'nullable|string|max:255',
+            'age' => 'nullable|numeric|min:0',
+            'weight' => 'nullable|numeric|min:0',
+            'gender' => 'required|string|in:male,female,unknown',
+            'color' => 'nullable|string|max:255',
         ]);
 
-        $validated['customer_id'] = auth()->user()->owner->id;
+        // Ensure current user has a Customer record (create if missing)
+        $customer = Customer::firstOrCreate(
+            ['user_id' => Auth::id()],
+            [
+                'name' => Auth::user()->name ?? 'Owner',
+                'email' => Auth::user()->email ?? null,
+            ]
+        );
 
-        $pet = Pet::create($validated);
+        Pet::create([
+            'name' => $request->name,
+            'species' => $request->species,
+            'breed' => $request->breed,
+            'age' => $request->age,
+            'weight' => $request->weight,
+            'gender' => $request->gender,
+            'color' => $request->color,
+            'customer_id' => $customer->id,
+        ]);
 
-        return redirect()->route('pets.show', $pet)->with('success', 'Hewan peliharaan berhasil ditambahkan!');
+        return redirect()->route('pets.index')->with('success', 'Hewan berhasil ditambahkan.');
     }
 
     /**
-     * Display the specified pet
+     * Display the specified pet.
      */
     public function show(Pet $pet)
     {
-        // Check ownership or admin/vet access
-        if (auth()->user()->role === 'owner') {
-            if (auth()->user()->owner->id !== $pet->customer_id) {
-                abort(403, 'Anda tidak memiliki akses untuk melihat hewan peliharaan ini.');
-            }
+        // Ensure the logged-in user owns the pet
+        $ownerUserId = Customer::where('id', $pet->customer_id)->value('user_id');
+        if ($ownerUserId !== Auth::id()) {
+            abort(403, 'Unauthorized');
         }
-
-        $pet->load(['owner', 'appointments.doctor', 'medicalRecords', 'vaccinations', 'prescriptions']);
 
         return view('pets.show', compact('pet'));
     }
 
     /**
-     * Show the form for editing the specified pet
+     * Show the form for editing the specified pet.
      */
     public function edit(Pet $pet)
     {
-        // Check ownership or admin access
-        if (auth()->user()->role === 'owner') {
-            if (auth()->user()->owner->id !== $pet->customer_id) {
-                abort(403, 'Anda tidak memiliki akses untuk mengedit hewan peliharaan ini.');
-            }
-        } elseif (auth()->user()->role !== 'admin') {
-            abort(403, 'Anda tidak memiliki akses untuk mengedit hewan peliharaan.');
+        $ownerUserId = Customer::where('id', $pet->customer_id)->value('user_id');
+        if ($ownerUserId !== Auth::id()) {
+            abort(403, 'Unauthorized');
         }
 
         return view('pets.edit', compact('pet'));
     }
 
     /**
-     * Update the specified pet
+     * Update the specified pet in storage.
      */
     public function update(Request $request, Pet $pet)
     {
-        // Check ownership or admin access
-        if (auth()->user()->role === 'owner') {
-            if (auth()->user()->owner->id !== $pet->customer_id) {
-                abort(403, 'Anda tidak memiliki akses untuk mengedit hewan peliharaan ini.');
-            }
-        } elseif (auth()->user()->role !== 'admin') {
-            abort(403, 'Anda tidak memiliki akses untuk mengedit hewan peliharaan.');
+        $ownerUserId = Customer::where('id', $pet->customer_id)->value('user_id');
+        if ($ownerUserId !== Auth::id()) {
+            abort(403, 'Unauthorized');
         }
 
-        $validated = $request->validate([
-            'name'    => 'sometimes|string|max:255',
-            'species' => 'sometimes|string',
-            'breed'   => 'nullable|string|max:255',
-            'age'     => 'nullable|numeric|min:0|max:50',
-            'weight'  => 'nullable|numeric|min:0|max:200',
-            'gender'  => 'nullable|string|in:male,female,unknown',
-            'color'   => 'nullable|string|max:255',
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'species' => 'required|string|max:255',
+            'breed' => 'nullable|string|max:255',
+            'age' => 'nullable|numeric|min:0',
+            'weight' => 'nullable|numeric|min:0',
+            'gender' => 'required|string|in:male,female,unknown',
+            'color' => 'nullable|string|max:255',
         ]);
 
-        $pet->update($validated);
+        $pet->update($request->all());
 
-        return redirect()->route('pets.show', $pet)->with('success', 'Data hewan peliharaan berhasil diperbarui!');
+        return redirect()->route('pets.index')->with('success', 'Hewan berhasil diperbarui.');
     }
 
     /**
-     * Remove the specified pet
+     * Remove the specified pet from storage.
      */
     public function destroy(Pet $pet)
     {
-        // Check ownership or admin access
-        if (auth()->user()->role === 'owner') {
-            if (auth()->user()->owner->id !== $pet->customer_id) {
-                abort(403, 'Anda tidak memiliki akses untuk menghapus hewan peliharaan ini.');
-            }
-        } elseif (auth()->user()->role !== 'admin') {
-            abort(403, 'Anda tidak memiliki akses untuk menghapus hewan peliharaan.');
-        }
-
-        // Check if pet has appointments or medical records
-        if ($pet->appointments()->exists() || $pet->medicalRecords()->exists()) {
-            return back()->with('error', 'Tidak dapat menghapus hewan peliharaan yang memiliki rekam medis atau janji temu.');
+        $ownerUserId = Customer::where('id', $pet->customer_id)->value('user_id');
+        if ($ownerUserId !== Auth::id()) {
+            abort(403, 'Unauthorized');
         }
 
         $pet->delete();
-
-        $message = auth()->user()->role === 'owner' ? 'Hewan peliharaan berhasil dihapus!' : 'Hewan peliharaan berhasil dihapus!';
-        return redirect()->route('pets')->with('success', $message);
-    }
-
-    /**
-     * Get all pets of a customer (for dropdown selections)
-     */
-    public function petsByCustomer($customerId)
-    {
-        // Check if user has access to this customer's pets
-        if (auth()->user()->role === 'owner') {
-            if (auth()->user()->owner->id != $customerId) {
-                abort(403, 'Anda tidak memiliki akses untuk melihat hewan peliharaan ini.');
-            }
-        }
-
-        $pets = Pet::where('customer_id', $customerId)->get();
-        return response()->json($pets);
+        return redirect()->route('pets.index')->with('success', 'Hewan berhasil dihapus.');
     }
 }

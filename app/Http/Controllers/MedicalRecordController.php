@@ -26,9 +26,9 @@ class MedicalRecordController extends Controller
         $query = MedicalRecord::query()->with(['pet.owner', 'doctor', 'appointment']);
 
         // Filter by pet (for owner role)
-        if (auth()->user()->role === 'owner' && auth()->user()->owner) {
+        if (auth()->user()->role === 'owner' && auth()->user()->customer) {
             $query->whereHas('pet', function($q) {
-                $q->where('customer_id', auth()->user()->owner->id);
+                $q->where('customer_id', auth()->user()->customer->id);
             });
         }
 
@@ -117,7 +117,7 @@ class MedicalRecordController extends Controller
     {
         // Check access - owners can only see their pet's medical records
         if (auth()->user()->role === 'owner') {
-            if (auth()->user()->owner->id !== $record->pet->customer_id) {
+            if (auth()->user()->customer->id !== $record->pet->customer_id) {
                 abort(403, 'Anda tidak memiliki akses untuk melihat rekam medis ini.');
             }
         }
@@ -168,25 +168,21 @@ class MedicalRecordController extends Controller
     /**
      * Get medical records by pet
      */
-    public function byPet(Request $request, $petId)
+    public function byPet(Request $request, Pet $pet)
     {
-        $query = MedicalRecord::where('pet_id', $petId)
-            ->with(['doctor', 'appointment']);
-
         // Check ownership for owners
         if (auth()->user()->role === 'owner') {
-            $pet = Pet::where('id', $petId)
-                ->where('customer_id', auth()->user()->owner->id)
-                ->first();
-
-            if (!$pet) {
+            if ($pet->customer_id !== auth()->user()->customer->id) {
                 abort(403, 'Hewan peliharaan tidak ditemukan atau akses ditolak.');
             }
         }
 
-        $records = $query->latest('created_at')->get();
+        $records = MedicalRecord::where('pet_id', $pet->id)
+            ->with(['doctor', 'appointment'])
+            ->latest('created_at')
+            ->get();
 
-        return view('medical-records.by-pet', compact('records'));
+        return view('medical-records.by-pet', compact('records', 'pet'));
     }
 
     /**
