@@ -7,36 +7,36 @@ use App\Models\Medication;
 use App\Models\Pet;
 use App\Models\Doctor;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class PrescriptionController extends Controller
 {
-    public function __construct()
-    {
-        // Middleware is applied at route level
-    }
+    // Middleware handled in routes
 
     /**
      * Display a listing of prescriptions
      */
     public function index(Request $request)
     {
-        $query = Prescription::query()->with(['pet.owner', 'doctor', 'medications']);
+        $user = Auth::user();
+
+        $query = Prescription::with(['pet.customer', 'doctor', 'medications']);
 
         // Filter by status
         if ($request->has('status')) {
             $query->where('status', $request->status);
         }
 
-        // Filter by pet (for owner role)
-        if (auth()->user()->role === 'owner' && auth()->user()->owner) {
-            $query->whereHas('pet', function($q) {
-                $q->where('customer_id', auth()->user()->owner->id);
-            });
+        // Owner sees only their prescriptions
+        if ($user->role === 'customer' && $user->customer) {
+            $query->whereHas('pet', fn($q) =>
+                $q->where('customer_id', $user->customer->id)
+            );
         }
 
-        // Filter by doctor (for vet role)
-        if (auth()->user()->role === 'vet' && auth()->user()->doctor) {
-            $query->where('doctor_id', auth()->user()->doctor->id);
+        // Doctor sees only prescriptions they created
+        if ($user->role === 'doctor' && $user->doctor) {
+            $query->where('doctor_id', $user->doctor->id);
         }
 
         $prescriptions = $query->latest('date')->paginate(15);
@@ -49,9 +49,10 @@ class PrescriptionController extends Controller
      */
     public function create()
     {
-        $pets = Pet::with('owner')->get();
-        $doctors = Doctor::where('is_active', true)->get();
-        return view('prescriptions.create', compact('pets', 'doctors'));
+        return view('prescriptions.create', [
+            'pets'    => Pet::with('customer')->get(),
+            'doctors' => Doctor::where('is_active', true)->get(),
+        ]);
     }
 
     /**
@@ -60,36 +61,37 @@ class PrescriptionController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'pet_id' => 'required|exists:pets,id',
-            'doctor_id' => 'required|exists:doctors,id',
-            'medical_record_id' => 'nullable|exists:medical_records,id',
-            'date' => 'required|date',
-            'diagnosis' => 'required|string',
-            'instructions' => 'required|string',
-            'medications' => 'required|array|min:1',
-            'medications.*.name' => 'required|string|max:255',
-            'medications.*.dosage' => 'required|string|max:255',
-            'medications.*.frequency' => 'required|string|max:255',
-            'medications.*.duration' => 'required|string|max:255',
+            'pet_id'              => 'required|exists:pets,id',
+            'doctor_id'           => 'required|exists:doctors,id',
+            'medical_record_id'   => 'nullable|exists:medical_records,id',
+            'date'                => 'required|date',
+            'diagnosis'           => 'required|string',
+            'instructions'        => 'required|string',
+            'medications'         => 'required|array|min:1',
+            'medications.*.name'  => 'required|string|max:255',
+            'medications.*.dosage'=> 'required|string|max:255',
+            'medications.*.frequency'=> 'required|string|max:255',
+            'medications.*.duration'=> 'required|string|max:255',
             'medications.*.notes' => 'nullable|string',
         ]);
 
         $prescription = Prescription::create([
-            'pet_id' => $validated['pet_id'],
-            'doctor_id' => $validated['doctor_id'],
+            'pet_id'            => $validated['pet_id'],
+            'doctor_id'         => $validated['doctor_id'],
             'medical_record_id' => $validated['medical_record_id'] ?? null,
-            'date' => $validated['date'],
-            'diagnosis' => $validated['diagnosis'],
-            'instructions' => $validated['instructions'],
-            'status' => 'active',
+            'date'              => $validated['date'],
+            'diagnosis'         => $validated['diagnosis'],
+            'instructions'      => $validated['instructions'],
+            'status'            => 'active',
         ]);
 
-        // Create medications
         foreach ($validated['medications'] as $medication) {
             $prescription->medications()->create($medication);
         }
 
-        return redirect()->route('prescriptions.show', $prescription)->with('success', 'Resep berhasil dibuat!');
+        return redirect()
+            ->route('prescriptions.show', $prescription)
+            ->with('success', 'Resep berhasil dibuat!');
     }
 
     /**
@@ -97,9 +99,11 @@ class PrescriptionController extends Controller
      */
     public function show(Prescription $prescription)
     {
-        // Check access - owners can only see their pet's prescriptions
-        if (auth()->user()->role === 'owner') {
-            if (auth()->user()->owner->id !== $prescription->pet->customer_id) {
+        $user = Auth::user();
+
+        // Owner only sees their prescriptions
+        if ($user->role === 'customer') {
+            if (!$user->customer || $prescription->pet->customer_id !== $user->customer->id) {
                 abort(403, 'Anda tidak memiliki akses untuk melihat resep ini.');
             }
         }
@@ -112,14 +116,18 @@ class PrescriptionController extends Controller
      */
     public function edit(Prescription $prescription)
     {
-        // Check access - only admin and vet can edit
-        if (auth()->user()->role === 'owner') {
+        $user = Auth::user();
+
+        // Only doctor/admin can edit
+        if ($user->role === 'customer') {
             abort(403, 'Anda tidak memiliki akses untuk mengedit resep.');
         }
 
-        $pets = Pet::with('owner')->get();
-        $doctors = Doctor::where('is_active', true)->get();
-        return view('prescriptions.edit', compact('prescription', 'pets', 'doctors'));
+        return view('prescriptions.edit', [
+            'prescription' => $prescription,
+            'pets'         => Pet::with('customer')->get(),
+            'doctors'      => Doctor::where('is_active', true)->get(),
+        ]);
     }
 
     /**
@@ -127,19 +135,22 @@ class PrescriptionController extends Controller
      */
     public function update(Request $request, Prescription $prescription)
     {
-        // Check access - only admin and vet can update
-        if (auth()->user()->role === 'owner') {
+        $user = Auth::user();
+
+        if ($user->role === 'customer') {
             abort(403, 'Anda tidak memiliki akses untuk mengedit resep.');
         }
 
         $validated = $request->validate([
-            'diagnosis' => 'sometimes|string',
-            'instructions' => 'sometimes|string',
+            'diagnosis'     => 'sometimes|string',
+            'instructions'  => 'sometimes|string',
         ]);
 
         $prescription->update($validated);
 
-        return redirect()->route('prescriptions.show', $prescription)->with('success', 'Resep berhasil diperbarui!');
+        return redirect()
+            ->route('prescriptions.show', $prescription)
+            ->with('success', 'Resep berhasil diperbarui!');
     }
 
     /**
@@ -147,18 +158,21 @@ class PrescriptionController extends Controller
      */
     public function updateStatus(Request $request, Prescription $prescription)
     {
-        // Check access - only admin and vet can update status
-        if (auth()->user()->role === 'owner') {
+        $user = Auth::user();
+
+        if ($user->role === 'customer') {
             abort(403, 'Anda tidak memiliki akses untuk mengubah status resep.');
         }
 
         $validated = $request->validate([
-            'status' => 'required|in:active,completed,cancelled'
+            'status' => 'required|in:active,completed,cancelled',
         ]);
 
         $prescription->update(['status' => $validated['status']]);
 
-        return redirect()->route('prescriptions.show', $prescription)->with('success', 'Status resep berhasil diperbarui!');
+        return redirect()
+            ->route('prescriptions.show', $prescription)
+            ->with('success', 'Status resep berhasil diperbarui!');
     }
 
     /**
@@ -166,13 +180,12 @@ class PrescriptionController extends Controller
      */
     public function byPet(Request $request, $petId)
     {
-        $query = Prescription::where('pet_id', $petId)
-            ->with(['doctor', 'medications']);
+        $user = Auth::user();
 
-        // Check ownership for owners
-        if (auth()->user()->role === 'owner') {
+        // Owners can only see their pets' prescriptions
+        if ($user->role === 'customer') {
             $pet = Pet::where('id', $petId)
-                ->where('customer_id', auth()->user()->owner->id)
+                ->where('customer_id', $user->customer->id)
                 ->first();
 
             if (!$pet) {
@@ -180,7 +193,10 @@ class PrescriptionController extends Controller
             }
         }
 
-        $prescriptions = $query->latest('date')->get();
+        $prescriptions = Prescription::where('pet_id', $petId)
+            ->with(['doctor', 'medications'])
+            ->latest('date')
+            ->get();
 
         return view('prescriptions.by-pet', compact('prescriptions'));
     }
@@ -190,15 +206,17 @@ class PrescriptionController extends Controller
      */
     public function destroy(Prescription $prescription)
     {
-        // Check access - only admin and vet can delete
-        if (auth()->user()->role === 'owner') {
+        $user = Auth::user();
+
+        if ($user->role === 'customer') {
             abort(403, 'Anda tidak memiliki akses untuk menghapus resep.');
         }
 
-        // Delete associated medications first
         $prescription->medications()->delete();
         $prescription->delete();
 
-        return redirect()->route('prescriptions')->with('success', 'Resep berhasil dihapus!');
+        return redirect()
+            ->route('prescriptions')
+            ->with('success', 'Resep berhasil dihapus!');
     }
 }

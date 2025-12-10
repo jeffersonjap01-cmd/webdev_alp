@@ -5,27 +5,27 @@ namespace App\Http\Controllers;
 use App\Models\Vaccination;
 use App\Models\Pet;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class VaccinationController extends Controller
 {
-    public function __construct()
-    {
-        // Middleware is applied at route level
-    }
+    // Middleware sudah di-route, jadi constructor kosong
 
     /**
      * Display a listing of vaccinations
      */
     public function index(Request $request)
     {
-        $query = Vaccination::query()->with(['pet.owner']);
+        $user = Auth::user();
+
+        $query = Vaccination::with(['pet.customer']);
 
         // Filter by status
-        if ($request->has('status')) {
+        if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
-        // Upcoming vaccinations
+        // Upcoming vaccinations (30 days default)
         if ($request->boolean('upcoming')) {
             $query->upcoming(30);
         }
@@ -35,11 +35,11 @@ class VaccinationController extends Controller
             $query->overdue();
         }
 
-        // Filter by pet (for owner role)
-        if (auth()->user()->role === 'owner' && auth()->user()->owner) {
-            $query->whereHas('pet', function($q) {
-                $q->where('customer_id', auth()->user()->owner->id);
-            });
+        // Customer sees only their pets
+        if ($user->role === 'customer' && $user->customer) {
+            $query->whereHas('pet', fn($q) =>
+                $q->where('customer_id', $user->customer->id)
+            );
         }
 
         $vaccinations = $query->latest('next_date')->paginate(15);
@@ -48,24 +48,25 @@ class VaccinationController extends Controller
     }
 
     /**
-     * Show the form for creating a new vaccination
+     * Display form to create vaccination
      */
     public function create()
     {
-        $pets = Pet::with('owner')->get();
-        return view('vaccinations.create', compact('pets'));
+        return view('vaccinations.create', [
+            'pets' => Pet::with('customer')->get()
+        ]);
     }
 
     /**
-     * Store a newly created vaccination
+     * Store new vaccination
      */
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'pet_id' => 'required|exists:pets,id',
+            'pet_id'       => 'required|exists:pets,id',
             'vaccine_name' => 'required|string|max:255',
-            'next_date' => 'required|date|after_or_equal:today',
-            'notes' => 'nullable|string',
+            'next_date'    => 'required|date|after_or_equal:today',
+            'notes'        => 'nullable|string',
         ]);
 
         $validated['last_date'] = now();
@@ -74,18 +75,22 @@ class VaccinationController extends Controller
 
         $vaccination = Vaccination::create($validated);
 
-        return redirect()->route('vaccinations.show', $vaccination)->with('success', 'Jadwal vaksinasi berhasil ditambahkan!');
+        return redirect()
+            ->route('vaccinations.show', $vaccination)
+            ->with('success', 'Jadwal vaksinasi berhasil ditambahkan!');
     }
 
     /**
-     * Display the specified vaccination
+     * Display one vaccination
      */
     public function show(Vaccination $vaccination)
     {
-        // Check access - owners can only see their pet's vaccinations
-        if (auth()->user()->role === 'owner') {
-            if (auth()->user()->owner->id !== $vaccination->pet->customer_id) {
-                abort(403, 'Anda tidak memiliki akses untuk melihat jadwal vaksinasi ini.');
+        $user = Auth::user();
+
+        // Customers can only see their pet’s vaccinations
+        if ($user->role === 'customer') {
+            if ($vaccination->pet->customer_id !== $user->customer->id) {
+                abort(403, 'Anda tidak memiliki akses ke jadwal vaksinasi ini.');
             }
         }
 
@@ -93,41 +98,47 @@ class VaccinationController extends Controller
     }
 
     /**
-     * Show the form for editing the specified vaccination
+     * Edit form
      */
     public function edit(Vaccination $vaccination)
     {
-        // Check access - only admin and vet can edit
-        if (auth()->user()->role === 'owner') {
-            abort(403, 'Anda tidak memiliki akses untuk mengedit jadwal vaksinasi.');
+        $user = Auth::user();
+
+        if ($user->role === 'customer') {
+            abort(403, 'Anda tidak memiliki akses untuk mengedit vaksinasi.');
         }
 
-        $pets = Pet::with('owner')->get();
-        return view('vaccinations.edit', compact('vaccination', 'pets'));
+        return view('vaccinations.edit', [
+            'vaccination' => $vaccination,
+            'pets' => Pet::with('customer')->get(),
+        ]);
     }
 
     /**
-     * Update the specified vaccination
+     * Update vaccination
      */
     public function update(Request $request, Vaccination $vaccination)
     {
-        // Check access - only admin and vet can update
-        if (auth()->user()->role === 'owner') {
-            abort(403, 'Anda tidak memiliki akses untuk mengedit jadwal vaksinasi.');
+        $user = Auth::user();
+
+        if ($user->role === 'customer') {
+            abort(403, 'Anda tidak memiliki akses untuk mengedit vaksinasi.');
         }
 
         $validated = $request->validate([
             'vaccine_name' => 'sometimes|string|max:255',
-            'next_date' => 'sometimes|date|after_or_equal:today',
-            'notes' => 'nullable|string',
+            'next_date'    => 'sometimes|date|after_or_equal:today',
+            'notes'        => 'nullable|string',
         ]);
 
         $vaccination->update($validated);
-        
-        // Update status based on date
+
+        // Update status automatically
         $vaccination->updateStatus();
 
-        return redirect()->route('vaccinations.show', $vaccination)->with('success', 'Jadwal vaksinasi berhasil diperbarui!');
+        return redirect()
+            ->route('vaccinations.show', $vaccination)
+            ->with('success', 'Jadwal vaksinasi berhasil diperbarui!');
     }
 
     /**
@@ -135,9 +146,10 @@ class VaccinationController extends Controller
      */
     public function complete(Request $request, Vaccination $vaccination)
     {
-        // Check access - only admin and vet can complete
-        if (auth()->user()->role === 'owner') {
-            abort(403, 'Anda tidak memiliki akses untuk menandai vaccination sebagai selesai.');
+        $user = Auth::user();
+
+        if ($user->role === 'customer') {
+            abort(403, 'Anda tidak memiliki akses untuk menandai vaksinasi.');
         }
 
         $validated = $request->validate([
@@ -146,26 +158,29 @@ class VaccinationController extends Controller
 
         $vaccination->update([
             'last_date' => now(),
-            'status' => 'completed',
-            'notes' => $validated['notes'] ?? $vaccination->notes,
+            'status'    => 'completed',
+            'notes'     => $validated['notes'] ?? $vaccination->notes,
         ]);
 
-        return redirect()->route('vaccinations.show', $vaccination)->with('success', 'Vaksinasi berhasil ditandai sebagai selesai!');
+        return redirect()
+            ->route('vaccinations.show', $vaccination)
+            ->with('success', 'Vaksinasi berhasil ditandai selesai!');
     }
 
     /**
-     * Get upcoming vaccinations
+     * List upcoming vaccinations
      */
     public function upcoming(Request $request)
     {
+        $user = Auth::user();
         $days = $request->get('days', 30);
-        $query = Vaccination::upcoming($days)->with(['pet.owner']);
 
-        // Filter by pet ownership for owners
-        if (auth()->user()->role === 'owner' && auth()->user()->owner) {
-            $query->whereHas('pet', function($q) {
-                $q->where('customer_id', auth()->user()->owner->id);
-            });
+        $query = Vaccination::upcoming($days)->with('pet.customer');
+
+        if ($user->role === 'customer') {
+            $query->whereHas('pet', fn($q) =>
+                $q->where('customer_id', $user->customer->id)
+            );
         }
 
         $vaccinations = $query->latest('next_date')->get();
@@ -174,17 +189,20 @@ class VaccinationController extends Controller
     }
 
     /**
-     * Remove the specified vaccination
+     * Delete vaccination
      */
     public function destroy(Vaccination $vaccination)
     {
-        // Check access - only admin and vet can delete
-        if (auth()->user()->role === 'owner') {
-            abort(403, 'Anda tidak memiliki akses untuk menghapus jadwal vaksinasi.');
+        $user = Auth::user();
+
+        if ($user->role === 'customer') {
+            abort(403, 'Anda tidak memiliki akses untuk menghapus vaksinasi.');
         }
 
         $vaccination->delete();
 
-        return redirect()->route('vaccinations')->with('success', 'Jadwal vaksinasi berhasil dihapus!');
+        return redirect()
+            ->route('vaccinations')
+            ->with('success', 'Jadwal vaksinasi berhasil dihapus!');
     }
 }

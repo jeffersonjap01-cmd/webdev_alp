@@ -17,7 +17,7 @@
         </div>
         @if(auth()->user()->role === 'admin')
         <div class="mt-4 sm:mt-0">
-            <a href="{{ route('owners.create') }}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+            <a href="{{ route('customers.create') }}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                 <i class="fas fa-plus mr-2"></i>
                 Tambah Pemilik
             </a>
@@ -28,7 +28,7 @@
     <!-- Search and Filters -->
     <div class="bg-white shadow rounded-lg mb-6">
         <div class="px-4 py-5 sm:p-6">
-            <form method="GET" action="{{ route('owners') }}" class="grid grid-cols-1 gap-4 sm:grid-cols-4">
+            <form method="GET" action="{{ route('customers') }}" class="grid grid-cols-1 gap-4 sm:grid-cols-4">
                 <div class="sm:col-span-2">
                     <label for="search" class="block text-sm font-medium text-gray-700">Cari</label>
                     <input type="text" name="search" id="search" value="{{ request('search') }}" 
@@ -60,7 +60,7 @@
         <ul class="divide-y divide-gray-200">
             @forelse($owners ?? [] as $owner)
             <li>
-                <a href="{{ route('owners.show', $owner) }}" class="block hover:bg-gray-50">
+                <a href="{{ route('customers.show', $owner) }}" class="block hover:bg-gray-50">
                     <div class="px-4 py-4 sm:px-6">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center">
@@ -114,7 +114,7 @@
                 <p class="text-gray-400 text-sm">Mulai dengan menambahkan pemilik hewan baru</p>
                 @if(auth()->user()->role === 'admin')
                 <div class="mt-4">
-                    <a href="{{ route('owners.create') }}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
+                    <a href="{{ route('customers.create') }}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
                         <i class="fas fa-plus mr-2"></i>
                         Tambah Pemilik Pertama
                     </a>

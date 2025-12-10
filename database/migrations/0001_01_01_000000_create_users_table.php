@@ -14,9 +14,7 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->enum('role', ['admin', 'vet', 'owner'])->default('owner');
-            $table->foreignId('reference_id')->nullable()->comment('ID dari owners atau doctors table');
-            $table->string('reference_type')->nullable()->comment('Owner atau Doctor');
+            $table->enum('role', ['admin', 'doctor', 'customer'])->default('customer');
             $table->rememberToken();
             $table->timestamps();
             $table->softDeletes();

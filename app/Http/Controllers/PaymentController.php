@@ -4,51 +4,51 @@ namespace App\Http\Controllers;
 
 use App\Models\Payment;
 use App\Models\MedicalRecord;
-use App\Models\Invoice;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class PaymentController extends Controller
 {
-    public function __construct()
-    {
-        // Middleware is applied at route level
-    }
+    // Middleware sudah di-route, jadi constructor kosong
+    public function __construct() {}
 
     /**
      * Display a listing of payments
      */
     public function index(Request $request)
     {
-        $query = Payment::query()->with(['medicalRecord.pet.owner']);
+        $user = Auth::user();
 
-        // Filter by owner (for owner role)
-        if (auth()->user()->role === 'owner' && auth()->user()->owner) {
-            $query->whereHas('medicalRecord.pet', function($q) {
-                $q->where('customer_id', auth()->user()->owner->id);
+        $query = Payment::with(['medicalRecord.pet.customer']);
+
+        // Jika customer → hanya lihat tagihan hewannya
+        if ($user->role === 'customer' && $user->customer) {
+            $query->whereHas('medicalRecord.pet', function ($q) use ($user) {
+                $q->where('customer_id', $user->customer->id);
             });
         }
 
-        // Filter by status
+        // Filter status
         if ($request->has('status')) {
             $query->where('status', $request->status);
         }
 
-        $payments = $query->latest('created_at')->paginate(15);
+        $payments = $query->latest()->paginate(15);
 
         return view('payments.index', compact('payments'));
     }
 
     /**
-     * Show the form for creating a new payment (Admin only)
+     * Show create payment form (Admin only)
      */
     public function create()
     {
-        $medicalRecords = MedicalRecord::with(['pet.owner', 'doctor'])->get();
+        $medicalRecords = MedicalRecord::with(['pet.customer', 'doctor'])->get();
         return view('payments.create', compact('medicalRecords'));
     }
 
     /**
-     * Store a newly created payment (Admin only)
+     * Store payment (Admin only)
      */
     public function createPayment(Request $request)
     {
@@ -72,116 +72,125 @@ class PaymentController extends Controller
             'status'            => 'unpaid',
         ]);
 
-        return redirect()->route('payments.show', $payment)->with('success', 'Tagihan berhasil dibuat!');
+        return redirect()
+            ->route('payments.show', $payment)
+            ->with('success', 'Tagihan berhasil dibuat!');
     }
 
     /**
-     * Display the specified payment
+     * Show payment details
      */
     public function show(Payment $payment)
     {
-        // Check access - owners can only see their own payments
-        if (auth()->user()->role === 'owner') {
-            if (auth()->user()->owner->id !== $payment->medicalRecord->pet->customer_id) {
-                abort(403, 'Anda tidak memiliki akses untuk melihat tagihan ini.');
+        $user = Auth::user();
+
+        // Customer hanya bisa lihat tagihan hewannya
+        if ($user->role === 'customer') {
+            if ($payment->medicalRecord->pet->customer_id !== $user->customer->id) {
+                abort(403, 'Anda tidak memiliki akses melihat tagihan ini.');
             }
         }
 
-        $payment->load(['medicalRecord.pet.owner', 'medicalRecord.doctor']);
+        $payment->load(['medicalRecord.pet.customer', 'medicalRecord.doctor']);
+
         return view('payments.show', compact('payment'));
     }
 
     /**
-     * Show payment form for owner to pay
+     * Payment form for customer
      */
     public function pay(Payment $payment)
     {
-        // Check access - only owner can pay their bills
-        if (auth()->user()->role !== 'owner') {
-            abort(403, 'Hanya pemilik yang dapat melakukan pembayaran.');
+        $user = Auth::user();
+
+        if ($user->role !== 'customer') {
+            abort(403, 'Hanya customer yang bisa membayar tagihan.');
         }
 
-        if (auth()->user()->owner->id !== $payment->medicalRecord->pet->customer_id) {
-            abort(403, 'Anda tidak memiliki akses untuk membayar tagihan ini.');
+        if ($payment->medicalRecord->pet->customer_id !== $user->customer->id) {
+            abort(403, 'Anda tidak memiliki akses ke tagihan ini.');
         }
 
         if ($payment->status === 'paid') {
-            return redirect()->route('payments.show', $payment)->with('error', 'Tagihan sudah dibayar.');
+            return redirect()->route('payments.show', $payment)
+                             ->with('error', 'Tagihan sudah dibayar.');
         }
 
-        $payment->load(['medicalRecord.pet.owner']);
+        $payment->load(['medicalRecord.pet.customer']);
+
         return view('payments.pay', compact('payment'));
     }
 
     /**
-     * Upload payment proof (Owner only)
+     * Upload payment proof (Customer only)
      */
     public function uploadProof(Request $request, Payment $payment)
     {
-        // Check access - only owner can upload proof
-        if (auth()->user()->role !== 'owner') {
-            abort(403, 'Hanya pemilik yang dapat mengupload bukti pembayaran.');
+        $user = Auth::user();
+
+        if ($user->role !== 'customer') {
+            abort(403, 'Hanya customer yang dapat upload bukti pembayaran.');
         }
 
-        if (auth()->user()->owner->id !== $payment->medicalRecord->pet->customer_id) {
-            abort(403, 'Anda tidak memiliki akses untuk mengupload bukti pembayaran.');
-        }
-
-        if ($payment->status === 'paid') {
-            return back()->with('error', 'Tagihan sudah dibayar.');
+        if ($payment->medicalRecord->pet->customer_id !== $user->customer->id) {
+            abort(403, 'Anda tidak memiliki akses.');
         }
 
         $request->validate([
-            'proof_image' => 'required|image|max:2048'
+            'proof_image' => 'required|image|max:2048',
         ]);
 
         $path = $request->file('proof_image')->store('payment_proofs', 'public');
 
         $payment->update([
             'proof_image' => $path,
-            'status' => 'pending_verification'
+            'status' => 'pending_verification',
         ]);
 
-        return redirect()->route('payments.show', $payment)->with('success', 'Bukti pembayaran berhasil diupload!');
+        return redirect()->route('payments.show', $payment)
+                         ->with('success', 'Bukti pembayaran berhasil diupload!');
     }
 
     /**
-     * Mark payment as paid (Admin only)
+     * Mark as paid (Admin only)
      */
     public function markPaid(Payment $payment)
     {
         $payment->update([
             'status' => 'paid',
-            'paid_at' => now()
+            'paid_at' => now(),
         ]);
 
-        return redirect()->route('payments.show', $payment)->with('success', 'Pembayaran berhasil ditandai sebagai lunas!');
+        return redirect()->route('payments.show', $payment)
+                         ->with('success', 'Pembayaran ditandai sebagai lunas!');
     }
 
     /**
-     * Mark payment as rejected (Admin only)
+     * Mark as rejected (Admin only)
      */
     public function markRejected(Request $request, Payment $payment)
     {
         $request->validate([
-            'rejection_reason' => 'nullable|string|max:500'
+            'rejection_reason' => 'nullable|string|max:500',
         ]);
 
         $payment->update([
             'status' => 'rejected',
-            'rejection_reason' => $request->rejection_reason
+            'rejection_reason' => $request->rejection_reason,
         ]);
 
-        return redirect()->route('payments.show', $payment)->with('success', 'Pembayaran berhasil ditolak!');
+        return redirect()->route('payments.show', $payment)
+                         ->with('success', 'Pembayaran berhasil ditolak!');
     }
 
     /**
-     * Remove the specified payment (Admin only)
+     * Delete payment (Admin only)
      */
     public function destroy(Payment $payment)
     {
         $payment->delete();
 
-        return redirect()->route('payments')->with('success', 'Tagihan berhasil dihapus!');
+        return redirect()->route('payments')
+                         ->with('success', 'Tagihan berhasil dihapus!');
     }
 }

@@ -17,6 +17,7 @@ class User extends Authenticatable
         'role',
         'reference_id',
         'reference_type',
+        'softDeletes',
     ];
 
     protected $hidden = [
@@ -48,11 +49,11 @@ class User extends Authenticatable
 
     public function isVet(): bool
     {
-        return $this->role === 'vet';
+        return $this->role === 'doctor';
     }
 
     public function isOwner(): bool
     {
-        return $this->role === 'owner';
+        return $this->role === 'customer';
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Controller;
 use App\Models\MedicalRecord;
 use App\Models\Diagnosis;
 use App\Models\Medication;
@@ -9,64 +10,59 @@ use App\Models\Appointment;
 use App\Models\Pet;
 use App\Models\Doctor;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class MedicalRecordController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('auth');
-        $this->middleware('role:admin,vet')->except(['index', 'show', 'byPet']);
-    }
+    
 
     /**
-     * Display a listing of medical records
+     * List all medical records
      */
     public function index(Request $request)
     {
-        $query = MedicalRecord::query()->with(['pet.owner', 'doctor', 'appointment']);
+        $user = Auth::user();
 
-        // Filter by pet (for owner role)
-        if (auth()->user()->role === 'owner' && auth()->user()->customer) {
-            $query->whereHas('pet', function($q) {
-                $q->where('customer_id', auth()->user()->customer->id);
-            });
+        $query = MedicalRecord::with(['pet.customer.user', 'doctor.user', 'appointment']);
+
+        // Customer sees only their pets
+        if ($user->role === 'customer' && $user->customer) {
+            $query->whereHas('pet', fn($q) =>
+                $q->where('customer_id', $user->customer->id)
+            );
         }
 
-        // Filter by doctor (for vet role)
-        if (auth()->user()->role === 'vet' && auth()->user()->doctor) {
-            $query->where('doctor_id', auth()->user()->doctor->id);
+        // Doctor sees only their own patients
+        if ($user->role === 'doctor' && $user->doctor) {
+            $query->where('doctor_id', $user->doctor->id);
         }
 
-        $records = $query->latest('created_at')->paginate(15);
+        $records = $query->latest()->paginate(15);
 
         return view('medical-records.index', compact('records'));
     }
 
     /**
-     * Show the form for creating a new medical record
+     * Show create form
      */
     public function create(Request $request)
     {
-        $appointments = Appointment::with(['pet.owner', 'doctor'])->get();
-        $pets = Pet::with('owner')->get();
-        $doctors = Doctor::where('is_active', true)->get();
-
-        // Pre-select appointment if provided
-        $selectedAppointment = null;
-        if ($request->has('appointment_id')) {
-            $selectedAppointment = Appointment::with(['pet.owner', 'doctor'])
-                ->find($request->appointment_id);
-        }
-
-        return view('medical-records.create', compact('appointments', 'pets', 'doctors', 'selectedAppointment'));
+        return view('medical-records.create', [
+            'appointments' => Appointment::with(['pet.customer', 'doctor'])->get(),
+            'pets'         => Pet::with('customer')->get(),
+            'doctors'      => Doctor::where('is_active', true)->get(),
+            'selectedAppointment' => $request->appointment_id
+                ? Appointment::with(['pet.customer', 'doctor'])->find($request->appointment_id)
+                : null,
+        ]);
     }
 
     /**
-     * Store a newly created medical record
+     * Store medical record
      */
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'appointment_id' => 'required|exists:appointments,id',
             'doctor_id'      => 'required|exists:doctors,id',
             'pet_id'         => 'required|exists:pets,id',
@@ -77,129 +73,139 @@ class MedicalRecordController extends Controller
             'medications'    => 'nullable|array',
         ]);
 
-        // Create main record
-        $record = MedicalRecord::create($request->only([
-            'appointment_id', 'doctor_id', 'pet_id', 
-            'symptoms', 'notes', 'recommendation'
-        ]));
+        $record = MedicalRecord::create($validated);
 
-        // Add diagnoses
-        if ($request->diagnoses) {
-            foreach ($request->diagnoses as $diag) {
+        // Insert diagnoses
+        if (!empty($validated['diagnoses'])) {
+            foreach ($validated['diagnoses'] as $d) {
                 Diagnosis::create([
                     'medical_record_id' => $record->id,
-                    'diagnosis_name' => $diag['name'],
-                    'description' => $diag['description'] ?? null,
+                    'diagnosis_name'    => $d['name'],
+                    'description'       => $d['description'] ?? null,
                 ]);
             }
         }
 
-        // Add medications
-        if ($request->medications) {
-            foreach ($request->medications as $med) {
+        // Insert medications
+        if (!empty($validated['medications'])) {
+            foreach ($validated['medications'] as $m) {
                 Medication::create([
                     'medical_record_id' => $record->id,
-                    'medicine_name' => $med['name'],
-                    'dosage' => $med['dosage'] ?? null,
-                    'frequency' => $med['frequency'] ?? null,
-                    'duration' => $med['duration'] ?? null,
+                    'medicine_name'     => $m['name'],
+                    'dosage'            => $m['dosage'] ?? null,
+                    'frequency'         => $m['frequency'] ?? null,
+                    'duration'          => $m['duration'] ?? null,
                 ]);
             }
         }
 
-        return redirect()->route('medical-records.show', $record)->with('success', 'Rekam medis berhasil dibuat!');
+        return redirect()
+            ->route('medical-records.show', $record)
+            ->with('success', 'Rekam medis berhasil dibuat!');
     }
 
     /**
-     * Display the specified medical record
+     * Show a medical record
      */
     public function show(MedicalRecord $record)
     {
-        // Check access - owners can only see their pet's medical records
-        if (auth()->user()->role === 'owner') {
-            if (auth()->user()->customer->id !== $record->pet->customer_id) {
-                abort(403, 'Anda tidak memiliki akses untuk melihat rekam medis ini.');
+        $user = Auth::user();
+
+        // Customer can only see their own pet
+        if ($user->role === 'customer') {
+            if (!$user->customer || $record->pet->customer_id !== $user->customer->id) {
+                abort(403, 'Anda tidak memiliki akses untuk rekam medis ini.');
             }
         }
 
-        $record->load(['diagnoses', 'medications', 'doctor', 'pet.owner', 'appointment']);
+        $record->load([
+            'diagnoses',
+            'medications',
+            'doctor.user',
+            'pet.customer.user',
+            'appointment',
+        ]);
 
         return view('medical-records.show', compact('record'));
     }
 
     /**
-     * Show the form for editing the specified medical record
+     * Edit form
      */
     public function edit(MedicalRecord $record)
     {
-        // Check access - only admin and vet can edit
-        if (auth()->user()->role === 'owner') {
-            abort(403, 'Anda tidak memiliki akses untuk mengedit rekam medis.');
-        }
+        $this->authorizeEdit();
 
-        $appointments = Appointment::with(['pet.owner', 'doctor'])->get();
-        $pets = Pet::with('owner')->get();
-        $doctors = Doctor::where('is_active', true)->get();
-
-        return view('medical-records.edit', compact('record', 'appointments', 'pets', 'doctors'));
+        return view('medical-records.edit', [
+            'record'      => $record,
+            'appointments'=> Appointment::with(['pet.customer', 'doctor'])->get(),
+            'pets'        => Pet::with('customer')->get(),
+            'doctors'     => Doctor::where('is_active', true)->get(),
+        ]);
     }
 
     /**
-     * Update the specified medical record
+     * Update record
      */
     public function update(Request $request, MedicalRecord $record)
     {
-        // Check access - only admin and vet can update
-        if (auth()->user()->role === 'owner') {
-            abort(403, 'Anda tidak memiliki akses untuk mengedit rekam medis.');
-        }
+        $this->authorizeEdit();
 
-        $request->validate([
-            'symptoms' => 'nullable|string',
-            'notes' => 'nullable|string',
+        $validated = $request->validate([
+            'symptoms'       => 'nullable|string',
+            'notes'          => 'nullable|string',
             'recommendation' => 'nullable|string',
         ]);
 
-        $record->update($request->only(['symptoms', 'notes', 'recommendation']));
+        $record->update($validated);
 
-        return redirect()->route('medical-records.show', $record)->with('success', 'Rekam medis berhasil diperbarui!');
+        return redirect()
+            ->route('medical-records.show', $record)
+            ->with('success', 'Rekam medis berhasil diperbarui!');
     }
 
     /**
-     * Get medical records by pet
+     * List records by pet
      */
-    public function byPet(Request $request, Pet $pet)
+    public function byPet(Pet $pet)
     {
-        // Check ownership for owners
-        if (auth()->user()->role === 'owner') {
-            if ($pet->customer_id !== auth()->user()->customer->id) {
-                abort(403, 'Hewan peliharaan tidak ditemukan atau akses ditolak.');
-            }
+        $user = Auth::user();
+
+        if ($user->role === 'customer' && $pet->customer_id !== $user->customer->id) {
+            abort(403, 'Akses ditolak.');
         }
 
-        $records = MedicalRecord::where('pet_id', $pet->id)
-            ->with(['doctor', 'appointment'])
-            ->latest('created_at')
+        $records = $pet->medicalRecords()
+            ->with(['doctor.user', 'appointment'])
+            ->latest()
             ->get();
 
         return view('medical-records.by-pet', compact('records', 'pet'));
     }
 
     /**
-     * Remove the specified medical record
+     * Delete record
      */
     public function destroy(MedicalRecord $record)
     {
-        // Check access - only admin and vet can delete
-        if (auth()->user()->role === 'owner') {
-            abort(403, 'Anda tidak memiliki akses untuk menghapus rekam medis.');
-        }
+        $this->authorizeEdit();
 
-        // Delete associated diagnoses and medications first
         $record->diagnoses()->delete();
         $record->medications()->delete();
         $record->delete();
 
-        return redirect()->route('medical-records')->with('success', 'Rekam medis berhasil dihapus!');
+        return redirect()
+            ->route('medical-records')
+            ->with('success', 'Rekam medis berhasil dihapus!');
+    }
+
+    /**
+     * Helper to check permission for edit/delete
+     */
+    private function authorizeEdit()
+    {
+        if (Auth::user()->role === 'customer') {
+            abort(403, 'Akses ditolak.');
+        }
     }
 }
