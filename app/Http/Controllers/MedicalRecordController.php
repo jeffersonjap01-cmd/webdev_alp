@@ -50,7 +50,7 @@ class MedicalRecordController extends Controller
         return view('medical-records.create', [
             'appointments' => Appointment::with(['pet.customer', 'doctor'])->get(),
             'pets'         => Pet::with('customer')->get(),
-            'doctors'      => Doctor::where('is_active', true)->get(),
+            'doctors'      => Doctor::active()->get(),
             'selectedAppointment' => $request->appointment_id
                 ? Appointment::with(['pet.customer', 'doctor'])->find($request->appointment_id)
                 : null,
@@ -140,7 +140,7 @@ class MedicalRecordController extends Controller
             'record'      => $record,
             'appointments'=> Appointment::with(['pet.customer', 'doctor'])->get(),
             'pets'        => Pet::with('customer')->get(),
-            'doctors'     => Doctor::where('is_active', true)->get(),
+            'doctors'     => Doctor::active()->get(),
         ]);
     }
 

@@ -1,5 +1,5 @@
 @if (session('success'))
-    <div class="fixed top-4 right-4 z-50 max-w-sm w-full" x-data="{ show: true }" x-show="show" x-transition>
+    <div data-flash="true" class="fixed top-4 right-4 z-50 max-w-sm w-full" x-data="{ show: true }" x-show="show" x-transition>
         <div class="bg-green-50 border border-green-200 rounded-lg p-4 shadow-lg">
             <div class="flex items-start">
                 <div class="flex-shrink-0">
@@ -20,7 +20,7 @@
 @endif
 
 @if (session('error'))
-    <div class="fixed top-4 right-4 z-50 max-w-sm w-full" x-data="{ show: true }" x-show="show" x-transition>
+    <div data-flash="true" class="fixed top-4 right-4 z-50 max-w-sm w-full" x-data="{ show: true }" x-show="show" x-transition>
         <div class="bg-red-50 border border-red-200 rounded-lg p-4 shadow-lg">
             <div class="flex items-start">
                 <div class="flex-shrink-0">
@@ -41,7 +41,7 @@
 @endif
 
 @if (session('warning'))
-    <div class="fixed top-4 right-4 z-50 max-w-sm w-full" x-data="{ show: true }" x-show="show" x-transition>
+    <div data-flash="true" class="fixed top-4 right-4 z-50 max-w-sm w-full" x-data="{ show: true }" x-show="show" x-transition>
         <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 shadow-lg">
             <div class="flex items-start">
                 <div class="flex-shrink-0">
@@ -62,7 +62,7 @@
 @endif
 
 @if (session('info'))
-    <div class="fixed top-4 right-4 z-50 max-w-sm w-full" x-data="{ show: true }" x-show="show" x-transition>
+    <div data-flash="true" class="fixed top-4 right-4 z-50 max-w-sm w-full" x-data="{ show: true }" x-show="show" x-transition>
         <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 shadow-lg">
             <div class="flex items-start">
                 <div class="flex-shrink-0">
@@ -85,8 +85,8 @@
 <!-- Auto-hide flash messages after 5 seconds -->
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Auto-hide success messages
-        const successAlerts = document.querySelectorAll('[class*="bg-green-50"]');
+        // Auto-hide success messages (only flash containers)
+        const successAlerts = document.querySelectorAll('[data-flash] .bg-green-50');
         successAlerts.forEach(alert => {
             setTimeout(() => {
                 if (alert.style.display !== 'none') {
@@ -96,8 +96,8 @@
             }, 5000);
         });
         
-        // Auto-hide info messages
-        const infoAlerts = document.querySelectorAll('[class*="bg-blue-50"]');
+        // Auto-hide info messages (only flash containers)
+        const infoAlerts = document.querySelectorAll('[data-flash] .bg-blue-50');
         infoAlerts.forEach(alert => {
             setTimeout(() => {
                 if (alert.style.display !== 'none') {

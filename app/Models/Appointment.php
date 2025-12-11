@@ -11,10 +11,12 @@ class Appointment extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'customer_id',
+        'user_id',
         'pet_id',
         'doctor_id',
         'appointment_time',
+        'service_type',
+        'duration',
         'status',
         'notes',
     ];
@@ -34,12 +36,42 @@ class Appointment extends Model
         return $this->belongsTo(Doctor::class);
     }
 
-    public function owner()
+    public function user()
     {
-        return $this->hasOneThrough(Customer::class, Pet::class, 'id', 'id', 'pet_id', 'customer_id');
+        return $this->belongsTo(User::class);
+    }
+
+    public function invoice()
+    {
+        return $this->hasOne(Invoice::class);
+    }
+
+    public function medicalRecord()
+    {
+        return $this->hasOne(MedicalRecord::class);
+    }
+
+    public function vaccination()
+    {
+        return $this->hasOne(Vaccination::class);
     }
 
     // Scopes
+    public function scopePending($query)
+    {
+        return $query->where('status', 'pending');
+    }
+
+    public function scopeAccepted($query)
+    {
+        return $query->where('status', 'accepted');
+    }
+
+    public function scopeInProgress($query)
+    {
+        return $query->where('status', 'in_progress');
+    }
+
     public function scopeScheduled($query)
     {
         return $query->where('status', 'scheduled');
@@ -77,6 +109,27 @@ class Appointment extends Model
     }
 
     // Methods
+    public function accept()
+    {
+        $this->status = 'accepted';
+        $this->save();
+        return $this;
+    }
+
+    public function decline()
+    {
+        $this->status = 'declined';
+        $this->save();
+        return $this;
+    }
+
+    public function startProgress()
+    {
+        $this->status = 'in_progress';
+        $this->save();
+        return $this;
+    }
+
     public function complete()
     {
         $this->status = 'completed';

@@ -22,7 +22,7 @@ class CustomerController extends Controller
             'email'    => $validated['email'],
             'password' => Hash::make($validated['password']),
             'name'     => $validated['name'],
-            'role'     => 'customer',
+            'role'     => 'user',
         ]);
 
         // Create customer profile
@@ -90,7 +90,7 @@ class CustomerController extends Controller
             'email'    => $validated['email'],
             'password' => Hash::make($validated['password']),
             'name'     => $validated['name'],
-            'role'     => 'customer',
+            'role'     => 'user',
         ]);
 
         Customer::create([

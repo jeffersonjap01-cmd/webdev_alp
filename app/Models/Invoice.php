@@ -11,7 +11,8 @@ class Invoice extends Model
 
     protected $fillable = [
         'invoice_number',
-        'owner_id',
+        'appointment_id',
+        'user_id',
         'pet_id',
         'date',
         'subtotal',
@@ -34,9 +35,14 @@ class Invoice extends Model
     ];
 
     // Relationships
-    public function owner()
+    public function user()
     {
-        return $this->belongsTo(Customer::class);
+        return $this->belongsTo(User::class);
+    }
+
+    public function appointment()
+    {
+        return $this->belongsTo(Appointment::class);
     }
 
     public function pet()

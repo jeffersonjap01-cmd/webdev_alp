@@ -21,36 +21,21 @@
 </head>
 <body class="font-sans antialiased bg-gray-50">
     <div class="min-h-screen">
-        <!-- Top navigation for authenticated users -->
+        <!-- Navigation -->
         @auth
             @include('components.navigation')
         @endauth
-
-        <!-- Hero (if provided) -->
-        @hasSection('hero')
-            @yield('hero')
-        @endif
-
-        <!-- Main content area (page header, flash messages, content) -->
-        <main class="flex-1 relative overflow-y-auto focus:outline-none">
-            <div class="py-6">
-                <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-                    <!-- Page header -->
-                    <div class="pb-5 border-b border-gray-200">
-                        <h1 class="text-3xl font-bold leading-tight text-gray-900">@yield('page-title', 'Dashboard')</h1>
-                        @hasSection('page-description')
-                            <p class="mt-2 max-w-4xl text-sm text-gray-500">@yield('page-description')</p>
-                        @endif
-                    </div>
-                </div>
-            </div>
-
+    
+        <!-- Guest Content -->
+        @guest
             <!-- Flash Messages -->
             @include('components.flash-messages')
-
-            <!-- Page content -->
-            @yield('content')
-        </main>
+    
+            <!-- Main Content -->
+            <main class="flex-1">
+                @yield('content')
+            </main>
+        @endguest
     
         <!-- Footer -->
         @auth

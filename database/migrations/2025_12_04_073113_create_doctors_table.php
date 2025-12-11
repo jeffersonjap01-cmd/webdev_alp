@@ -20,9 +20,9 @@ return new class extends Migration
             $table->string('email')->nullable();
             $table->string('specialization')->nullable();
 
-            // Status & Jadwal dokter
-            $table->boolean('is_active')->default(false);
-            $table->integer('service_duration')->nullable(); // menit per pasien
+                // Status & Jadwal dokter
+                $table->string('status')->default('inactive');
+                $table->integer('service_duration')->nullable(); // menit per pasien
 
             $table->timestamps();
         });

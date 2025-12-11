@@ -18,6 +18,47 @@ use App\Http\Controllers\DashboardController;
 // HOME (PUBLIC)
 // =========================
 Route::get('/', fn() => view('home'))->name('home');
+// =========================
+// APPOINTMENTS
+// =========================
+Route::middleware('auth')->group(function () {
+    // All authenticated users can view list and details
+    Route::get('/appointments', [AppointmentController::class, 'index'])->name('appointments');
+
+    // Customers (users) and admins can create appointments (must be before {appointment} route)
+    Route::middleware('role:customer,admin')->group(function () {
+        Route::get('/appointments/create', [AppointmentController::class, 'create'])->name('appointments.create');
+        Route::post('/appointments', [AppointmentController::class, 'store'])->name('appointments.store');
+    });
+
+    // Show appointment details (must be after /appointments/create)
+    Route::get('/appointments/{appointment}', [AppointmentController::class, 'show'])->name('appointments.show');
+
+    // Admins can edit and delete appointments
+    Route::middleware('role:admin')->group(function () {
+        Route::get('/appointments/{appointment}/edit', [AppointmentController::class, 'edit'])->name('appointments.edit');
+        Route::put('/appointments/{appointment}', [AppointmentController::class, 'update'])->name('appointments.update');
+        Route::delete('/appointments/{appointment}', [AppointmentController::class, 'destroy'])->name('appointments.destroy');
+    });
+
+    // Status update (admin and vet)
+    Route::middleware('role:admin,vet')->group(function () {
+        Route::patch('/appointments/{appointment}/status', [AppointmentController::class, 'updateStatus'])->name('appointments.status');
+    });
+
+    // Doctor workflow actions
+    Route::middleware('role:dokter')->group(function () {
+        Route::post('/appointments/{appointment}/accept', [AppointmentController::class, 'accept'])->name('appointments.accept');
+        Route::post('/appointments/{appointment}/decline', [AppointmentController::class, 'decline'])->name('appointments.decline');
+        Route::post('/appointments/{appointment}/start', [AppointmentController::class, 'start'])->name('appointments.start');
+        Route::post('/appointments/{appointment}/complete', [AppointmentController::class, 'markCompleted'])->name('appointments.complete');
+    });
+
+    // Customer can cancel pending appointments
+    Route::middleware('role:customer')->group(function () {
+        Route::post('/appointments/{appointment}/cancel', [AppointmentController::class, 'cancel'])->name('appointments.cancel');
+    });
+});
 
 
 // =========================
@@ -92,28 +133,7 @@ Route::middleware('auth')->group(function () {
 
 
 // =========================
-// APPOINTMENTS
-// =========================
-Route::middleware('auth')->group(function () {
 
-    Route::get('/appointments', [AppointmentController::class, 'index'])->name('appointments');
-    Route::get('/appointments/{appointment}', [AppointmentController::class, 'show'])->name('appointments.show');
-
-    // Customer bikin appointment
-    Route::middleware('role:customer')->group(function () {
-        Route::get('/appointments/create', [AppointmentController::class, 'create'])->name('appointments.create');
-        Route::post('/appointments', [AppointmentController::class, 'store'])->name('appointments.store');
-    });
-
-    // Admin edit appointment
-    Route::middleware('role:admin')->group(function () {
-        Route::get('/appointments/{appointment}/edit', [AppointmentController::class, 'edit'])->name('appointments.edit');
-        Route::put('/appointments/{appointment}', [AppointmentController::class, 'update'])->name('appointments.update');
-        Route::delete('/appointments/{appointment}', [AppointmentController::class, 'destroy'])->name('appointments.destroy');
-    });
-
-    Route::patch('/appointments/{appointment}/status', [AppointmentController::class, 'updateStatus'])->name('appointments.status');
-});
 
 
 // =========================
@@ -123,7 +143,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/medical-records', [MedicalRecordController::class, 'index'])->name('medical-records');
     Route::get('/medical-records/{record}', [MedicalRecordController::class, 'show'])->name('medical-records.show');
 
-    Route::middleware('role:admin,doctor')->group(function () {
+    Route::middleware('role:admin,dokter')->group(function () {
         Route::get('/medical-records/create', [MedicalRecordController::class, 'create'])->name('medical-records.create');
         Route::post('/medical-records', [MedicalRecordController::class, 'store'])->name('medical-records.store');
         Route::get('/medical-records/{record}/edit', [MedicalRecordController::class, 'edit'])->name('medical-records.edit');

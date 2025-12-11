@@ -61,7 +61,7 @@ class DoctorController extends Controller
             'email'            => $request->email,
             'specialization'   => $request->specialization,
             'service_duration' => $request->service_duration,
-            'is_active'        => false,
+            'status'           => 'inactive',
         ]);
 
         return redirect()->route('doctors')->with('success', 'Dokter berhasil ditambahkan!');
@@ -114,10 +114,10 @@ class DoctorController extends Controller
      */
     public function toggleStatus(Doctor $doctor)
     {
-        $doctor->is_active = !$doctor->is_active;
-        $doctor->save();
+        // Use the model helper to toggle the status field
+        $doctor->toggleStatus();
 
-        $status = $doctor->is_active ? 'aktif' : 'nonaktif';
+        $status = $doctor->status === 'active' ? 'aktif' : 'nonaktif';
         return redirect()->route('doctors.show', $doctor)->with('success', "Status dokter berhasil diubah menjadi {$status}!");
     }
 

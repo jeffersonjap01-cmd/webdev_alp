@@ -36,20 +36,15 @@ class ProfileController extends Controller
         ];
 
         switch ($user->role) {
-            case 'owner':
-                if ($user->owner) {
-                    $data['owner_info'] = [
-                        'phone' => $user->owner->phone,
-                        'address' => $user->owner->address,
-                        'registered_date' => $user->owner->registered_date->format('d F Y'),
-                        'total_pets' => $user->owner->pets()->count(),
-                        'total_appointments' => $user->owner->appointments()->count(),
-                        'total_invoices' => $user->owner->invoices()->count(),
-                    ];
-                }
+            case 'customer':
+                $data['customer_info'] = [
+                    'total_pets' => \App\Models\Pet::where('user_id', $user->id)->count(),
+                    'total_appointments' => \App\Models\Appointment::where('user_id', $user->id)->count(),
+                    'total_invoices' => \App\Models\Invoice::where('user_id', $user->id)->count(),
+                ];
                 break;
 
-            case 'vet':
+            case 'dokter':
                 if ($user->doctor) {
                     $data['doctor_info'] = [
                         'phone' => $user->doctor->phone,
@@ -66,9 +61,8 @@ class ProfileController extends Controller
 
             case 'admin':
                 $data['admin_info'] = [
-                    'total_users' => User::count(),
+                    'total_users' => \App\Models\User::where('role', 'customer')->count(),
                     'total_doctors' => \App\Models\Doctor::count(),
-                    'total_owners' => \App\Models\Customer::count(),
                     'total_appointments' => \App\Models\Appointment::count(),
                 ];
                 break;

@@ -58,7 +58,7 @@
     <!-- Owners List -->
     <div class="bg-white shadow overflow-hidden sm:rounded-md">
         <ul class="divide-y divide-gray-200">
-            @forelse($owners ?? [] as $owner)
+            @forelse($customers ?? [] as $owner)
             <li>
                 <a href="{{ route('customers.show', $owner) }}" class="block hover:bg-gray-50">
                     <div class="px-4 py-4 sm:px-6">
@@ -73,8 +73,8 @@
                                             {{ $owner->name }}
                                         </p>
                                         <div class="ml-2 flex-shrink-0 flex">
-                                            <p class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $owner->status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                                                {{ $owner->status === 'active' ? 'Aktif' : 'Nonaktif' }}
+                                            <p class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                                Aktif
                                             </p>
                                         </div>
                                     </div>
@@ -100,7 +100,7 @@
                                     {{ $owner->pets()->count() }} Hewan
                                 </p>
                                 <p class="text-sm text-gray-500">
-                                    Bergabung: {{ $owner->registered_date ? $owner->registered_date->format('M Y') : 'Unknown' }}
+                                    Bergabung: {{ $owner->created_at ? $owner->created_at->format('M Y') : 'Unknown' }}
                                 </p>
                             </div>
                         </div>
@@ -125,9 +125,9 @@
         </ul>
     </div>
 
-    @if(isset($owners) && $owners->hasPages())
+    @if(isset($customers) && $customers->hasPages())
     <div class="mt-6">
-        {{ $owners->links() }}
+        {{ $customers->links() }}
     </div>
     @endif
 </div>
