@@ -24,13 +24,13 @@ class UserSeeder extends Seeder
             ]
         );
 
-        // Create vet users
+        // Create doctor users
         User::firstOrCreate(
             ['email' => 'vet@vetcare.com'],
             [
                 'name' => 'Dr. Ahmad Rizki',
                 'password' => Hash::make('password'),
-                'role' => 'vet',
+                'role' => 'doctor',
             ]
         );
 
@@ -39,7 +39,7 @@ class UserSeeder extends Seeder
             [
                 'name' => 'Dr. Sari Indrawati',
                 'password' => Hash::make('password'),
-                'role' => 'vet',
+                'role' => 'doctor',
             ]
         );
 
@@ -49,7 +49,7 @@ class UserSeeder extends Seeder
             [
                 'name' => 'Budi Santoso',
                 'password' => Hash::make('password'),
-                'role' => 'owner',
+                'role' => 'customer',
             ]
         );
 
@@ -58,7 +58,7 @@ class UserSeeder extends Seeder
             [
                 'name' => 'Siti Sarah',
                 'password' => Hash::make('password'),
-                'role' => 'owner',
+                'role' => 'customer',
             ]
         );
 
@@ -67,7 +67,7 @@ class UserSeeder extends Seeder
             [
                 'name' => 'Ahmad Wijaya',
                 'password' => Hash::make('password'),
-                'role' => 'owner',
+                'role' => 'customer',
             ]
         );
 
@@ -77,7 +77,7 @@ class UserSeeder extends Seeder
             [
                 'name' => 'Test User',
                 'password' => Hash::make('password'),
-                'role' => 'owner',
+                'role' => 'customer',
             ]
         );
     }

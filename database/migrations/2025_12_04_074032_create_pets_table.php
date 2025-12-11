@@ -11,14 +11,13 @@ return new class extends Migration
         Schema::create('pets', function (Blueprint $table) {
             $table->id();
 
-            // Relasi ke customers
-            $table->foreignId('customer_id')->constrained()->onDelete('cascade');
+            // Relasi ke users
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
 
             $table->string('name');
             $table->string('species');      // jenis hewan (dog, cat, rabbit)
             $table->string('breed')->nullable(); // ras hewan
             $table->integer('age')->nullable();  // usia
-            $table->decimal('weight', 8, 2)->nullable(); // berat badan dalam kg
             $table->string('gender')->nullable(); // male / female
             $table->string('color')->nullable();
 

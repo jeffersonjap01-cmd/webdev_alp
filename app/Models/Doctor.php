@@ -46,11 +46,6 @@ class Doctor extends Model
     }
 
     // Accessors
-    public function getIsActiveAttribute(): bool
-    {
-        return $this->status === 'active';
-    }
-
     public function getPhotoAttribute(): ?string
     {
         return $this->photo_url;

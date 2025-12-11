@@ -20,22 +20,22 @@ class PrescriptionController extends Controller
     {
         $user = Auth::user();
 
-        $query = Prescription::with(['pet.customer', 'doctor', 'medications']);
+        $query = Prescription::with(['pet.user', 'doctor', 'medications']);
 
         // Filter by status
         if ($request->has('status')) {
             $query->where('status', $request->status);
         }
 
-        // Owner sees only their prescriptions
-        if ($user->role === 'customer' && $user->customer) {
+        // Customer sees only their prescriptions
+        if ($user->role === 'customer') {
             $query->whereHas('pet', fn($q) =>
-                $q->where('customer_id', $user->customer->id)
+                $q->where('user_id', $user->id)
             );
         }
 
         // Doctor sees only prescriptions they created
-        if ($user->role === 'doctor' && $user->doctor) {
+        if ($user->role === 'dokter' && $user->doctor) {
             $query->where('doctor_id', $user->doctor->id);
         }
 
@@ -50,8 +50,8 @@ class PrescriptionController extends Controller
     public function create()
     {
         return view('prescriptions.create', [
-            'pets'    => Pet::with('customer')->get(),
-            'doctors' => Doctor::where('is_active', true)->get(),
+            'pets'    => Pet::with('user')->get(),
+            'doctors' => Doctor::active()->get(),
         ]);
     }
 
@@ -101,9 +101,9 @@ class PrescriptionController extends Controller
     {
         $user = Auth::user();
 
-        // Owner only sees their prescriptions
+        // Customer only sees their prescriptions
         if ($user->role === 'customer') {
-            if (!$user->customer || $prescription->pet->customer_id !== $user->customer->id) {
+            if ($prescription->pet->user_id !== $user->id) {
                 abort(403, 'Anda tidak memiliki akses untuk melihat resep ini.');
             }
         }
@@ -125,8 +125,8 @@ class PrescriptionController extends Controller
 
         return view('prescriptions.edit', [
             'prescription' => $prescription,
-            'pets'         => Pet::with('customer')->get(),
-            'doctors'      => Doctor::where('is_active', true)->get(),
+            'pets'         => Pet::with('user')->get(),
+            'doctors'      => Doctor::active()->get(),
         ]);
     }
 
@@ -182,10 +182,10 @@ class PrescriptionController extends Controller
     {
         $user = Auth::user();
 
-        // Owners can only see their pets' prescriptions
-        if ($user->role === 'customer') {
+        // Users can only see their pets' prescriptions
+        if ($user->role === 'user') {
             $pet = Pet::where('id', $petId)
-                ->where('customer_id', $user->customer->id)
+                ->where('user_id', $user->id)
                 ->first();
 
             if (!$pet) {

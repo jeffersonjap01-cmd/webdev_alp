@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Pet;
-use App\Models\Customer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -19,8 +18,11 @@ class PetController extends Controller
      */
     public function index(Request $request)
     {
-        $customer = Customer::where('user_id', Auth::id())->first();
-        $pets = $customer ? Pet::where('customer_id', $customer->id)->paginate(10) : collect([]);
+        // Always use paginate to ensure we have a paginator instance
+        $pets = Pet::where('user_id', Auth::id())
+                  ->orderBy('created_at', 'desc')
+                  ->paginate(10);
+                  
         return view('pets.index', compact('pets'));
     }
 
@@ -47,15 +49,6 @@ class PetController extends Controller
             'color' => 'nullable|string|max:255',
         ]);
 
-        // Ensure current user has a Customer record (create if missing)
-        $customer = Customer::firstOrCreate(
-            ['user_id' => Auth::id()],
-            [
-                'name' => Auth::user()->name ?? 'Owner',
-                'email' => Auth::user()->email ?? null,
-            ]
-        );
-
         Pet::create([
             'name' => $request->name,
             'species' => $request->species,
@@ -64,7 +57,7 @@ class PetController extends Controller
             'weight' => $request->weight,
             'gender' => $request->gender,
             'color' => $request->color,
-            'customer_id' => $customer->id,
+            'user_id' => Auth::id(),
         ]);
 
         return redirect()->route('pets.index')->with('success', 'Hewan berhasil ditambahkan.');
@@ -76,8 +69,7 @@ class PetController extends Controller
     public function show(Pet $pet)
     {
         // Ensure the logged-in user owns the pet
-        $ownerUserId = Customer::where('id', $pet->customer_id)->value('user_id');
-        if ($ownerUserId !== Auth::id()) {
+        if ($pet->user_id !== Auth::id()) {
             abort(403, 'Unauthorized');
         }
 
@@ -89,8 +81,7 @@ class PetController extends Controller
      */
     public function edit(Pet $pet)
     {
-        $ownerUserId = Customer::where('id', $pet->customer_id)->value('user_id');
-        if ($ownerUserId !== Auth::id()) {
+        if ($pet->user_id !== Auth::id()) {
             abort(403, 'Unauthorized');
         }
 
@@ -102,8 +93,7 @@ class PetController extends Controller
      */
     public function update(Request $request, Pet $pet)
     {
-        $ownerUserId = Customer::where('id', $pet->customer_id)->value('user_id');
-        if ($ownerUserId !== Auth::id()) {
+        if ($pet->user_id !== Auth::id()) {
             abort(403, 'Unauthorized');
         }
 
@@ -127,8 +117,7 @@ class PetController extends Controller
      */
     public function destroy(Pet $pet)
     {
-        $ownerUserId = Customer::where('id', $pet->customer_id)->value('user_id');
-        if ($ownerUserId !== Auth::id()) {
+        if ($pet->user_id !== Auth::id()) {
             abort(403, 'Unauthorized');
         }
 
