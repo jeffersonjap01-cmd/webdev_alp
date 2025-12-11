@@ -16,7 +16,7 @@ class UserSeeder extends Seeder
     {
         // Create admin user
         User::firstOrCreate(
-            ['email' => 'admin@vetcare.com'],
+            ['email' => 'admin@doctorcare.com'],
             [
                 'name' => 'Administrator',
                 'password' => Hash::make('password'),
@@ -24,50 +24,50 @@ class UserSeeder extends Seeder
             ]
         );
 
-        // Create vet users
+        // Create doctor users
         User::firstOrCreate(
-            ['email' => 'vet@vetcare.com'],
+            ['email' => 'doctor@doctorcare.com'],
             [
                 'name' => 'Dr. Ahmad Rizki',
                 'password' => Hash::make('password'),
-                'role' => 'vet',
+                'role' => 'doctor',
             ]
         );
 
         User::firstOrCreate(
-            ['email' => 'vet2@vetcare.com'],
+            ['email' => 'doctor2@doctorcare.com'],
             [
                 'name' => 'Dr. Sari Indrawati',
                 'password' => Hash::make('password'),
-                'role' => 'vet',
+                'role' => 'doctor',
             ]
         );
 
-        // Create owner users
+        // Create custome users
         User::firstOrCreate(
-            ['email' => 'owner@vetcare.com'],
+            ['email' => 'customer@doctorcare.com'],
             [
                 'name' => 'Budi Santoso',
                 'password' => Hash::make('password'),
-                'role' => 'owner',
+                'role' => 'customer',
             ]
         );
 
         User::firstOrCreate(
-            ['email' => 'owner2@vetcare.com'],
+            ['email' => 'customer2@doctorcare.com'],
             [
                 'name' => 'Siti Sarah',
                 'password' => Hash::make('password'),
-                'role' => 'owner',
+                'role' => 'customer',
             ]
         );
 
         User::firstOrCreate(
-            ['email' => 'owner3@vetcare.com'],
+            ['email' => 'customer3@doctorcare.com'],
             [
                 'name' => 'Ahmad Wijaya',
                 'password' => Hash::make('password'),
-                'role' => 'owner',
+                'role' => 'customer',
             ]
         );
 
@@ -77,7 +77,7 @@ class UserSeeder extends Seeder
             [
                 'name' => 'Test User',
                 'password' => Hash::make('password'),
-                'role' => 'owner',
+                'role' => 'customer',
             ]
         );
     }
