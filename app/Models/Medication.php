@@ -11,7 +11,8 @@ class Medication extends Model
 
     protected $fillable = [
         'prescription_id',
-        'name',
+        'medical_record_id',
+        'medicine_name',
         'dosage',
         'frequency',
         'duration',
@@ -22,5 +23,10 @@ class Medication extends Model
     public function prescription()
     {
         return $this->belongsTo(Prescription::class);
+    }
+
+    public function medicalRecord()
+    {
+        return $this->belongsTo(MedicalRecord::class);
     }
 }

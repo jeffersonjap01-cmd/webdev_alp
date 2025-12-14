@@ -233,82 +233,55 @@
                         <div class="grid grid-cols-1 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Symptoms</label>
-                                <textarea name="symptoms" rows="2" class="mt-1 block w-full border-gray-300 rounded-md"></textarea>
+                                <textarea name="symptoms" rows="2" class="mt-1 block w-full border-gray-300 rounded-md shadow-md hover:border-blue-500 focus:border-blue-500 focus:ring focus:ring-blue-200 transition-all"></textarea>
                             </div>
 
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Notes / Treatment</label>
-                                <textarea name="notes" rows="3" class="mt-1 block w-full border-gray-300 rounded-md"></textarea>
+                                <textarea name="notes" rows="3" class="mt-1 block w-full border-gray-300 rounded-md shadow-md hover:border-blue-500 focus:border-blue-500 focus:ring focus:ring-blue-200 transition-all"></textarea>
                             </div>
 
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Recommendation</label>
-                                <input type="text" name="recommendation" class="mt-1 block w-full border-gray-300 rounded-md" />
+                                <input type="text" name="recommendation" class="mt-1 block w-full border-gray-300 rounded-md shadow-md hover:border-blue-500 focus:border-blue-500 focus:ring focus:ring-blue-200 transition-all" />
                             </div>
 
                             <div>
-                                <label class="block text-sm font-medium text-gray-700">Diagnoses (name — description)</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Diagnoses</label>
+                                <div class="grid grid-cols-2 gap-2 mb-2 text-xs font-semibold text-gray-600">
+                                    <div class="pl-2">Diagnosis Name</div>
+                                    <div class="pl-2">Description</div>
+                                </div>
                                 <div id="diagnoses-container" class="space-y-2">
                                     <div class="flex gap-2">
-                                        <input type="text" name="diagnoses[0][name]" placeholder="Diagnosis name" class="block w-1/2 border-gray-300 rounded-md" />
-                                        <input type="text" name="diagnoses[0][description]" placeholder="Description" class="block w-1/2 border-gray-300 rounded-md" />
+                                        <input type="text" name="diagnoses[0][name]" placeholder="Diagnosis name" class="block w-1/2 border-gray-300 rounded-md shadow-md hover:border-blue-500 focus:border-blue-500 focus:ring focus:ring-blue-200 transition-all" />
+                                        <input type="text" name="diagnoses[0][description]" placeholder="Description" class="block w-1/2 border-gray-300 rounded-md shadow-md hover:border-blue-500 focus:border-blue-500 focus:ring focus:ring-blue-200 transition-all" />
                                     </div>
                                 </div>
-                                <button type="button" onclick="addDiagnosis()" class="mt-2 inline-flex items-center px-3 py-1 border border-gray-300 rounded-md text-sm">Add diagnosis</button>
+                                <button type="button" onclick="addDiagnosis()" class="mt-2 inline-flex items-center px-3 py-1 border border-gray-300 rounded-md text-sm hover:bg-gray-100">Add diagnosis</button>
                             </div>
 
                             <div>
-                                <label class="block text-sm font-medium text-gray-700">Medications (name, dosage, frequency, duration)</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Medications</label>
+                                <div class="grid grid-cols-4 gap-2 mb-2 text-xs font-semibold text-gray-600">
+                                    <div class="pl-2">Name</div>
+                                    <div class="pl-2">Dosage</div>
+                                    <div class="pl-2">Frequency</div>
+                                    <div class="pl-2">Duration</div>
+                                </div>
                                 <div id="medications-container" class="space-y-2">
                                     <div class="grid grid-cols-4 gap-2">
-                                        <input type="text" name="medications[0][name]" placeholder="Name" class="block w-full border-gray-300 rounded-md" />
-                                        <input type="text" name="medications[0][dosage]" placeholder="Dosage" class="block w-full border-gray-300 rounded-md" />
-                                        <input type="text" name="medications[0][frequency]" placeholder="Frequency" class="block w-full border-gray-300 rounded-md" />
-                                        <input type="text" name="medications[0][duration]" placeholder="Duration" class="block w-full border-gray-300 rounded-md" />
+                                        <input type="text" name="medications[0][name]" placeholder="Name" class="block w-full border-gray-300 rounded-md shadow-md hover:border-blue-500 focus:border-blue-500 focus:ring focus:ring-blue-200 transition-all" />
+                                        <input type="text" name="medications[0][dosage]" placeholder="Dosage" class="block w-full border-gray-300 rounded-md shadow-md hover:border-blue-500 focus:border-blue-500 focus:ring focus:ring-blue-200 transition-all" />
+                                        <input type="text" name="medications[0][frequency]" placeholder="Frequency" class="block w-full border-gray-300 rounded-md shadow-md hover:border-blue-500 focus:border-blue-500 focus:ring focus:ring-blue-200 transition-all" />
+                                        <input type="text" name="medications[0][duration]" placeholder="Duration" class="block w-full border-gray-300 rounded-md shadow-md hover:border-blue-500 focus:border-blue-500 focus:ring focus:ring-blue-200 transition-all" />
                                     </div>
                                 </div>
-                                <button type="button" onclick="addMedication()" class="mt-2 inline-flex items-center px-3 py-1 border border-gray-300 rounded-md text-sm">Add medication</button>
+                                <button type="button" onclick="addMedication()" class="mt-2 inline-flex items-center px-3 py-1 border border-gray-300 rounded-md text-sm hover:bg-gray-100">Add medication</button>
                             </div>
 
                             <div class="flex justify-end">
                                 <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700">Save Medical Record</button>
-                            </div>
-                        </div>
-                    </form>
-
-                    <!-- Quick Prescription Form -->
-                    <form action="{{ route('prescriptions.store') }}" method="POST">
-                        @csrf
-                        <input type="hidden" name="pet_id" value="{{ $appointment->pet->id }}">
-                        <input type="hidden" name="doctor_id" value="{{ auth()->user()->doctor->id }}">
-                        <input type="hidden" name="medical_record_id" value="">
-                        <input type="hidden" name="date" value="{{ now()->format('Y-m-d') }}">
-
-                        <div class="grid grid-cols-1 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Diagnosis (for prescription)</label>
-                                <input type="text" name="diagnosis" class="mt-1 block w-full border-gray-300 rounded-md" required />
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Instructions</label>
-                                <textarea name="instructions" rows="2" class="mt-1 block w-full border-gray-300 rounded-md" required></textarea>
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Medications</label>
-                                <div id="rx-medications" class="space-y-2">
-                                    <div class="grid grid-cols-4 gap-2">
-                                        <input type="text" name="medications[0][name]" placeholder="Name" class="block w-full border-gray-300 rounded-md" required />
-                                        <input type="text" name="medications[0][dosage]" placeholder="Dosage" class="block w-full border-gray-300 rounded-md" required />
-                                        <input type="text" name="medications[0][frequency]" placeholder="Frequency" class="block w-full border-gray-300 rounded-md" required />
-                                        <input type="text" name="medications[0][duration]" placeholder="Duration" class="block w-full border-gray-300 rounded-md" required />
-                                    </div>
-                                </div>
-                                <button type="button" onclick="addRxMedication()" class="mt-2 inline-flex items-center px-3 py-1 border border-gray-300 rounded-md text-sm">Add Rx medication</button>
-                            </div>
-
-                            <div class="flex justify-end">
-                                <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700">Create Prescription</button>
                             </div>
                         </div>
                     </form>
@@ -446,9 +419,9 @@ function addDiagnosis() {
     const container = document.getElementById('diagnoses-container');
     const row = document.createElement('div');
     row.className = 'flex gap-2';
-    row.innerHTML = `<input type="text" name="diagnoses[${diagIndex}][name]" placeholder="Diagnosis name" class="block w-1/2 border-gray-300 rounded-md" />
-                     <input type="text" name="diagnoses[${diagIndex}][description]" placeholder="Description" class="block w-1/2 border-gray-300 rounded-md" />
-                     <button type="button" onclick="this.parentNode.remove()" class="ml-2 text-red-500">Remove</button>`;
+    row.innerHTML = `<input type="text" name="diagnoses[${diagIndex}][name]" placeholder="Diagnosis name" class="block w-1/2 border-gray-300 rounded-md shadow-md hover:border-blue-500 focus:border-blue-500 focus:ring focus:ring-blue-200 transition-all" />
+                     <input type="text" name="diagnoses[${diagIndex}][description]" placeholder="Description" class="block w-1/2 border-gray-300 rounded-md shadow-md hover:border-blue-500 focus:border-blue-500 focus:ring focus:ring-blue-200 transition-all" />
+                     <button type="button" onclick="this.parentNode.remove()" class="ml-2 text-red-500 hover:text-red-700">Remove</button>`;
     container.appendChild(row);
     diagIndex++;
 }
@@ -458,27 +431,13 @@ function addMedication() {
     const container = document.getElementById('medications-container');
     const row = document.createElement('div');
     row.className = 'grid grid-cols-4 gap-2';
-    row.innerHTML = `<input type="text" name="medications[${medIndex}][name]" placeholder="Name" class="block w-full border-gray-300 rounded-md" />
-                     <input type="text" name="medications[${medIndex}][dosage]" placeholder="Dosage" class="block w-full border-gray-300 rounded-md" />
-                     <input type="text" name="medications[${medIndex}][frequency]" placeholder="Frequency" class="block w-full border-gray-300 rounded-md" />
-                     <input type="text" name="medications[${medIndex}][duration]" placeholder="Duration" class="block w-full border-gray-300 rounded-md" />
-                     <button type="button" onclick="this.parentNode.remove()" class="ml-2 text-red-500">Remove</button>`;
+    row.innerHTML = `<input type="text" name="medications[${medIndex}][name]" placeholder="Name" class="block w-full border-gray-300 rounded-md shadow-md hover:border-blue-500 focus:border-blue-500 focus:ring focus:ring-blue-200 transition-all" />
+                     <input type="text" name="medications[${medIndex}][dosage]" placeholder="Dosage" class="block w-full border-gray-300 rounded-md shadow-md hover:border-blue-500 focus:border-blue-500 focus:ring focus:ring-blue-200 transition-all" />
+                     <input type="text" name="medications[${medIndex}][frequency]" placeholder="Frequency" class="block w-full border-gray-300 rounded-md shadow-md hover:border-blue-500 focus:border-blue-500 focus:ring focus:ring-blue-200 transition-all" />
+                     <input type="text" name="medications[${medIndex}][duration]" placeholder="Duration" class="block w-full border-gray-300 rounded-md shadow-md hover:border-blue-500 focus:border-blue-500 focus:ring focus:ring-blue-200 transition-all" />
+                     <button type="button" onclick="this.parentNode.remove()" class="ml-2 text-red-500 hover:text-red-700">Remove</button>`;
     container.appendChild(row);
     medIndex++;
-}
-
-let rxMedIndex = 1;
-function addRxMedication() {
-    const container = document.getElementById('rx-medications');
-    const row = document.createElement('div');
-    row.className = 'grid grid-cols-4 gap-2';
-    row.innerHTML = `<input type="text" name="medications[${rxMedIndex}][name]" placeholder="Name" class="block w-full border-gray-300 rounded-md" required />
-                     <input type="text" name="medications[${rxMedIndex}][dosage]" placeholder="Dosage" class="block w-full border-gray-300 rounded-md" required />
-                     <input type="text" name="medications[${rxMedIndex}][frequency]" placeholder="Frequency" class="block w-full border-gray-300 rounded-md" required />
-                     <input type="text" name="medications[${rxMedIndex}][duration]" placeholder="Duration" class="block w-full border-gray-300 rounded-md" required />
-                     <button type="button" onclick="this.parentNode.remove()" class="ml-2 text-red-500">Remove</button>`;
-    container.appendChild(row);
-    rxMedIndex++;
 }
 </script>
 @endsection

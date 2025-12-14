@@ -47,11 +47,21 @@ class PrescriptionController extends Controller
     /**
      * Show the form for creating a new prescription
      */
-    public function create()
+    public function create(Request $request)
     {
+        $medicalRecord = null;
+        $medications = [];
+        
+        if ($request->has('medical_record_id')) {
+            $medicalRecord = MedicalRecord::with(['medications', 'pet', 'doctor'])->findOrFail($request->medical_record_id);
+            $medications = $medicalRecord->medications;
+        }
+        
         return view('prescriptions.create', [
             'pets'    => Pet::with('user')->get(),
             'doctors' => Doctor::active()->get(),
+            'medicalRecord' => $medicalRecord,
+            'medications' => $medications,
         ]);
     }
 
@@ -67,12 +77,6 @@ class PrescriptionController extends Controller
             'date'                => 'required|date',
             'diagnosis'           => 'required|string',
             'instructions'        => 'required|string',
-            'medications'         => 'required|array|min:1',
-            'medications.*.name'  => 'required|string|max:255',
-            'medications.*.dosage'=> 'required|string|max:255',
-            'medications.*.frequency'=> 'required|string|max:255',
-            'medications.*.duration'=> 'required|string|max:255',
-            'medications.*.notes' => 'nullable|string',
         ]);
 
         $prescription = Prescription::create([
@@ -85,9 +89,17 @@ class PrescriptionController extends Controller
             'status'            => 'active',
         ]);
 
-        foreach ($validated['medications'] as $medication) {
-            $prescription->medications()->create($medication);
+        // If coming from medical record, link existing medications to this prescription
+        if ($validated['medical_record_id']) {
+            $medicalRecord = MedicalRecord::with('medications')->findOrFail($validated['medical_record_id']);
+            foreach ($medicalRecord->medications as $medication) {
+                $medication->update(['prescription_id' => $prescription->id]);
+            }
         }
+
+        return redirect()
+            ->route('prescriptions.show', $prescription)
+            ->with('success', 'Resep berhasil dibuat!');
 
         return redirect()
             ->route('prescriptions.show', $prescription)

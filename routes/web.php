@@ -6,6 +6,8 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DiagnosisController;
 use App\Http\Controllers\DoctorController;
+use App\Http\Controllers\ExaminationController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\MedicalRecordController;
 use App\Http\Controllers\MedicationController;
 use App\Http\Controllers\PaymentController;
@@ -14,16 +16,25 @@ use App\Http\Controllers\PrescriptionController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\VaccinationController;
-use App\Http\Controllers\DashboardController;
+
 
 // =========================
-// HOME (PUBLIC)
+// HOME (PUBLIC & DASHBOARD)
 // =========================
-Route::get('/', fn() => view('home'))->name('home');
+Route::get('/', [HomeController::class, 'index'])->name('home');
+
+// Redirect legacy dashboard route to home
+Route::get('/dashboard', function () {
+    return redirect()->route('home');
+})->name('dashboard');
+
 // =========================
 // APPOINTMENTS
 // =========================
 Route::middleware('auth')->group(function () {
+    Route::get('/doctor/examination/{appointment}', [ExaminationController::class, 'show'])->name('doctor.examination.show');
+    Route::post('/doctor/examination/{appointment}', [ExaminationController::class, 'store'])->name('doctor.examination.store');
+
     // All authenticated users can view list and details
     Route::get('/appointments', [AppointmentController::class, 'index'])->name('appointments');
 
@@ -81,7 +92,6 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'webLogout'])->name('logout');
 
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile');
 });
 
@@ -159,7 +169,7 @@ Route::middleware('auth')->group(function () {
 // PRESCRIPTIONS
 // =========================
 Route::middleware('auth')->group(function () {
-    Route::get('/prescriptions', [PrescriptionController::class, 'index'])->name('prescriptions.index');
+    Route::get('/prescriptions', [PrescriptionController::class, 'index'])->name('prescriptions');
     Route::get('/prescriptions/{prescription}', [PrescriptionController::class, 'show'])->name('prescriptions.show');
 
     Route::middleware('role:admin,doctor')->group(function () {
@@ -177,7 +187,7 @@ Route::middleware('auth')->group(function () {
 // =========================
 Route::middleware('auth')->group(function () {
     Route::middleware('role:admin,doctor')->group(function () {
-        Route::get('/medications', [MedicationController::class, 'index'])->name('medications.index');
+        Route::get('/medications', [MedicationController::class, 'index'])->name('medications');
         Route::get('/medications/create', [MedicationController::class, 'create'])->name('medications.create');
         Route::post('/medications', [MedicationController::class, 'store'])->name('medications.store');
         Route::get('/medications/{medication}', [MedicationController::class, 'show'])->name('medications.show');
@@ -229,7 +239,7 @@ Route::middleware('auth')->group(function () {
 // =========================
 // REPORTS
 // =========================
-Route::middleware(['auth','role:admin'])->group(function () {
+Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/reports/dashboard', [ReportController::class, 'dashboard'])->name('reports.dashboard');
     Route::get('/reports/revenue', [ReportController::class, 'revenue'])->name('reports.revenue');
     Route::get('/reports/appointments', [ReportController::class, 'appointments'])->name('reports.appointments');

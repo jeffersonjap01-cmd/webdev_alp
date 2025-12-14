@@ -100,8 +100,8 @@ class MedicalRecordController extends Controller
         }
 
         return redirect()
-            ->route('medical-records.show', $record)
-            ->with('success', 'Rekam medis berhasil dibuat!');
+            ->route('prescriptions.create', ['medical_record_id' => $record->id])
+            ->with('success', 'Rekam medis berhasil dibuat! Silakan buat resep obat.');
     }
 
     /**

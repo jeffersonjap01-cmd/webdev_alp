@@ -51,6 +51,16 @@ class Appointment extends Model
         return $this->hasOne(MedicalRecord::class);
     }
 
+    public function medicalRecords()
+    {
+        return $this->hasMany(MedicalRecord::class);
+    }
+
+    public function prescriptions()
+    {
+        return $this->hasManyThrough(Prescription::class, MedicalRecord::class);
+    }
+
     public function vaccination()
     {
         return $this->hasOne(Vaccination::class);
