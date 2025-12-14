@@ -45,4 +45,15 @@ class User extends Authenticatable
     {
         return $this->role === 'customer';
     }
+
+    // Relationships
+    public function doctor()
+    {
+        return $this->hasOne(Doctor::class, 'user_id');
+    }
+
+    public function pets()
+    {
+        return $this->hasMany(Pet::class, 'user_id');
+    }
 }

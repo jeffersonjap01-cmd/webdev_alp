@@ -44,7 +44,7 @@ class ProfileController extends Controller
                 ];
                 break;
 
-            case 'dokter':
+            case 'doctor':
                 if ($user->doctor) {
                     $data['doctor_info'] = [
                         'phone' => $user->doctor->phone,

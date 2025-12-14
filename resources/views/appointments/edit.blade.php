@@ -41,7 +41,7 @@
                         <option value="">Pilih Hewan Peliharaan</option>
                         @foreach($pets as $pet)
                             <option value="{{ $pet->id }}" {{ old('pet_id', $appointment->pet_id) == $pet->id ? 'selected' : '' }}>
-                                {{ $pet->name }} - {{ $pet->user->name ?? 'No Owner' }}
+                                {{ $pet->name }} - {{ $pet->customer->name ?? 'No Customer' }}
                             </option>
                         @endforeach
                     </select>

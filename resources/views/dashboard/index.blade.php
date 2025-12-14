@@ -23,7 +23,7 @@
                         @case('admin')
                             Kelola sistem klinik hewan dengan mudah dan efisien
                             @break
-                        @case('dokter')
+                        @case('doctor')
                             Berikan perawatan terbaik untuk pasien Anda hari ini
                             @break
                         @case('customer')
@@ -52,7 +52,7 @@
                         Kelola Dokter
                     </a>
                     @endif
-                    @if(auth()->user()->role === 'dokter')
+                    @if(auth()->user()->role === 'doctor')
                     <a href="{{ route('appointments') }}" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-blue-700 bg-white hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 shadow-lg">
                         <i class="fas fa-calendar-check mr-2"></i>
                         Jadwal Saya
@@ -97,7 +97,7 @@
                         'icon' => 'calendar-alt',
                         'color' => 'yellow'
                     ])
-                @elseif(auth()->user()->role === 'dokter')
+                @elseif(auth()->user()->role === 'doctor')
                     @include('dashboard.widgets.stats-card', [
                         'title' => 'Today Appointments',
                         'value' => number_format($stats['today_appointments'] ?? 0),

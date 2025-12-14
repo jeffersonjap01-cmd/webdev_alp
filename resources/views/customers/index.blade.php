@@ -1,25 +1,25 @@
 @extends('layouts.main')
 
-@section('title', 'Owners - VetCare')
+@section('title', 'Customers - VetCare')
 
-@section('page-title', 'Pemilik Hewan')
-@section('page-description', 'Kelola data pemilik hewan peliharaan')
+@section('page-title', 'Customer')
+@section('page-description', 'Kelola data customer')
 
 @section('content')
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <!-- Header -->
     <div class="sm:flex sm:items-center sm:justify-between mb-6">
         <div>
-            <h1 class="text-2xl font-bold text-gray-900">Pemilik Hewan</h1>
+            <h1 class="text-2xl font-bold text-gray-900">Customer</h1>
             <p class="mt-1 text-sm text-gray-600">
-                Kelola data pemilik hewan peliharaan
+                Kelola data customer hewan peliharaan
             </p>
         </div>
         @if(auth()->user()->role === 'admin')
         <div class="mt-4 sm:mt-0">
             <a href="{{ route('customers.create') }}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                 <i class="fas fa-plus mr-2"></i>
-                Tambah Pemilik
+                Tambah Customer
             </a>
         </div>
         @endif
@@ -58,19 +58,19 @@
     <!-- Owners List -->
     <div class="bg-white shadow overflow-hidden sm:rounded-md">
         <ul class="divide-y divide-gray-200">
-            @forelse($customers ?? [] as $owner)
+            @forelse($customers ?? [] as $customer)
             <li>
-                <a href="{{ route('customers.show', $owner) }}" class="block hover:bg-gray-50">
+                <a href="{{ route('customers.show', $customer) }}" class="block hover:bg-gray-50">
                     <div class="px-4 py-4 sm:px-6">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center">
                                 <div class="flex-shrink-0">
-                                    <img class="h-10 w-10 rounded-full" src="https://ui-avatars.com/api/?name={{ urlencode($owner->name) }}&color=7F9CF5&background=EBF4FF" alt="{{ $owner->name }}">
+                                    <img class="h-10 w-10 rounded-full" src="https://ui-avatars.com/api/?name={{ urlencode($customer->name) }}&color=7F9CF5&background=EBF4FF" alt="{{ $customer->name }}">
                                 </div>
                                 <div class="ml-4">
                                     <div class="flex items-center">
-                                        <p class="text-sm font-medium text-blue-600 truncate">
-                                            {{ $owner->name }}
+                                            <p class="text-sm font-medium text-blue-600 truncate">
+                                            {{ $customer->name }}
                                         </p>
                                         <div class="ml-2 flex-shrink-0 flex">
                                             <p class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
@@ -82,12 +82,12 @@
                                         <div class="sm:flex">
                                             <p class="flex items-center text-sm text-gray-500">
                                                 <i class="fas fa-envelope mr-1.5"></i>
-                                                {{ $owner->email }}
+                                                {{ $customer->email }}
                                             </p>
-                                            @if($owner->phone)
+                                            @if($customer->phone)
                                             <p class="mt-2 flex items-center text-sm text-gray-500 sm:mt-0 sm:ml-6">
                                                 <i class="fas fa-phone mr-1.5"></i>
-                                                {{ $owner->phone }}
+                                                {{ $customer->phone }}
                                             </p>
                                             @endif
                                         </div>
@@ -97,10 +97,10 @@
                             <div class="text-right">
                                 <p class="text-sm text-gray-900">
                                     <i class="fas fa-paw mr-1"></i>
-                                    {{ $owner->pets()->count() }} Hewan
+                                    {{ $customer->pets()->count() }} Hewan
                                 </p>
                                 <p class="text-sm text-gray-500">
-                                    Bergabung: {{ $owner->created_at ? $owner->created_at->format('M Y') : 'Unknown' }}
+                                    Bergabung: {{ $customer->created_at ? $customer->created_at->format('M Y') : 'Unknown' }}
                                 </p>
                             </div>
                         </div>
@@ -110,13 +110,13 @@
             @empty
             <li class="px-4 py-12 text-center">
                 <i class="fas fa-users text-4xl text-gray-300 mb-4"></i>
-                <p class="text-gray-500 text-lg">Belum ada pemilik hewan</p>
-                <p class="text-gray-400 text-sm">Mulai dengan menambahkan pemilik hewan baru</p>
+                <p class="text-gray-500 text-lg">Belum ada customer</p>
+                <p class="text-gray-400 text-sm">Mulai dengan menambahkan customer baru</p>
                 @if(auth()->user()->role === 'admin')
                 <div class="mt-4">
                     <a href="{{ route('customers.create') }}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
                         <i class="fas fa-plus mr-2"></i>
-                        Tambah Pemilik Pertama
+                        Tambah Customer Pertama
                     </a>
                 </div>
                 @endif

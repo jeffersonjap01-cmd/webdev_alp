@@ -4,8 +4,10 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\DiagnosisController;
 use App\Http\Controllers\DoctorController;
 use App\Http\Controllers\MedicalRecordController;
+use App\Http\Controllers\MedicationController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PetController;
 use App\Http\Controllers\PrescriptionController;
@@ -47,7 +49,7 @@ Route::middleware('auth')->group(function () {
     });
 
     // Doctor workflow actions
-    Route::middleware('role:dokter')->group(function () {
+    Route::middleware('role:doctor')->group(function () {
         Route::post('/appointments/{appointment}/accept', [AppointmentController::class, 'accept'])->name('appointments.accept');
         Route::post('/appointments/{appointment}/decline', [AppointmentController::class, 'decline'])->name('appointments.decline');
         Route::post('/appointments/{appointment}/start', [AppointmentController::class, 'start'])->name('appointments.start');
@@ -143,12 +145,61 @@ Route::middleware('auth')->group(function () {
     Route::get('/medical-records', [MedicalRecordController::class, 'index'])->name('medical-records');
     Route::get('/medical-records/{record}', [MedicalRecordController::class, 'show'])->name('medical-records.show');
 
-    Route::middleware('role:admin,dokter')->group(function () {
+    Route::middleware('role:admin,doctor')->group(function () {
         Route::get('/medical-records/create', [MedicalRecordController::class, 'create'])->name('medical-records.create');
         Route::post('/medical-records', [MedicalRecordController::class, 'store'])->name('medical-records.store');
         Route::get('/medical-records/{record}/edit', [MedicalRecordController::class, 'edit'])->name('medical-records.edit');
         Route::put('/medical-records/{record}', [MedicalRecordController::class, 'update'])->name('medical-records.update');
         Route::delete('/medical-records/{record}', [MedicalRecordController::class, 'destroy'])->name('medical-records.destroy');
+    });
+});
+
+
+// =========================
+// PRESCRIPTIONS
+// =========================
+Route::middleware('auth')->group(function () {
+    Route::get('/prescriptions', [PrescriptionController::class, 'index'])->name('prescriptions.index');
+    Route::get('/prescriptions/{prescription}', [PrescriptionController::class, 'show'])->name('prescriptions.show');
+
+    Route::middleware('role:admin,doctor')->group(function () {
+        Route::get('/prescriptions/create', [PrescriptionController::class, 'create'])->name('prescriptions.create');
+        Route::post('/prescriptions', [PrescriptionController::class, 'store'])->name('prescriptions.store');
+        Route::get('/prescriptions/{prescription}/edit', [PrescriptionController::class, 'edit'])->name('prescriptions.edit');
+        Route::put('/prescriptions/{prescription}', [PrescriptionController::class, 'update'])->name('prescriptions.update');
+        Route::delete('/prescriptions/{prescription}', [PrescriptionController::class, 'destroy'])->name('prescriptions.destroy');
+    });
+});
+
+
+// =========================
+// MEDICATIONS
+// =========================
+Route::middleware('auth')->group(function () {
+    Route::middleware('role:admin,doctor')->group(function () {
+        Route::get('/medications', [MedicationController::class, 'index'])->name('medications.index');
+        Route::get('/medications/create', [MedicationController::class, 'create'])->name('medications.create');
+        Route::post('/medications', [MedicationController::class, 'store'])->name('medications.store');
+        Route::get('/medications/{medication}', [MedicationController::class, 'show'])->name('medications.show');
+        Route::get('/medications/{medication}/edit', [MedicationController::class, 'edit'])->name('medications.edit');
+        Route::put('/medications/{medication}', [MedicationController::class, 'update'])->name('medications.update');
+        Route::delete('/medications/{medication}', [MedicationController::class, 'destroy'])->name('medications.destroy');
+    });
+});
+
+
+// =========================
+// DIAGNOSES
+// =========================
+Route::middleware('auth')->group(function () {
+    Route::middleware('role:admin,doctor')->group(function () {
+        Route::get('/diagnoses', [DiagnosisController::class, 'index'])->name('diagnoses.index');
+        Route::get('/diagnoses/create', [DiagnosisController::class, 'create'])->name('diagnoses.create');
+        Route::post('/diagnoses', [DiagnosisController::class, 'store'])->name('diagnoses.store');
+        Route::get('/diagnoses/{diagnosis}', [DiagnosisController::class, 'show'])->name('diagnoses.show');
+        Route::get('/diagnoses/{diagnosis}/edit', [DiagnosisController::class, 'edit'])->name('diagnoses.edit');
+        Route::put('/diagnoses/{diagnosis}', [DiagnosisController::class, 'update'])->name('diagnoses.update');
+        Route::delete('/diagnoses/{diagnosis}', [DiagnosisController::class, 'destroy'])->name('diagnoses.destroy');
     });
 });
 

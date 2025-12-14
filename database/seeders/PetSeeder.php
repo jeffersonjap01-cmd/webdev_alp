@@ -16,9 +16,9 @@ class PetSeeder extends Seeder
     {
         // Get users by email
         $testUser = User::where('email', 'mk@gmail.com')->first();
-        $owner1 = User::where('email', 'owner@vetcare.com')->first();
-        $owner2 = User::where('email', 'owner2@vetcare.com')->first();
-        $owner3 = User::where('email', 'owner3@vetcare.com')->first();
+        $customer1 = User::where('email', 'customer@vetcare.com')->first();
+        $customer2 = User::where('email', 'customer2@vetcare.com')->first();
+        $customer3 = User::where('email', 'customer3@vetcare.com')->first();
 
         if ($testUser) {
             Pet::firstOrCreate(
@@ -67,9 +67,9 @@ class PetSeeder extends Seeder
             );
         }
 
-        if ($owner1) {
+        if ($customer1) {
             Pet::firstOrCreate(
-                ['name' => 'Rocky', 'user_id' => $owner1->id],
+                ['name' => 'Rocky', 'user_id' => $customer1->id],
                 [
                     'species' => 'dog',
                     'breed' => 'German Shepherd',
@@ -80,7 +80,7 @@ class PetSeeder extends Seeder
                 ]
             );
             Pet::firstOrCreate(
-                ['name' => 'Molly', 'user_id' => $owner1->id],
+                ['name' => 'Molly', 'user_id' => $customer1->id],
                 [
                     'species' => 'cat',
                     'breed' => 'Maine Coon',
@@ -91,10 +91,9 @@ class PetSeeder extends Seeder
                 ]
             );
         }
-
-        if ($owner2) {
+        if ($customer2) {
             Pet::firstOrCreate(
-                ['name' => 'Charlie', 'user_id' => $owner2->id],
+                ['name' => 'Charlie', 'user_id' => $customer2->id],
                 [
                     'species' => 'dog',
                     'breed' => 'Beagle',
@@ -106,9 +105,9 @@ class PetSeeder extends Seeder
             );
         }
 
-        if ($owner3) {
+        if ($customer3) {
             Pet::firstOrCreate(
-                ['name' => 'Daisy', 'user_id' => $owner3->id],
+                ['name' => 'Daisy', 'user_id' => $customer3->id],
                 [
                     'species' => 'cat',
                     'breed' => 'British Shorthair',

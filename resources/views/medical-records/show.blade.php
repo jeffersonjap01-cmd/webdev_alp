@@ -207,29 +207,29 @@
                 </div>
             </div>
 
-            <!-- Owner Information -->
+            <!-- Customer Information -->
             <div class="bg-white shadow rounded-lg">
                 <div class="px-4 py-5 sm:p-6">
-                    <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Informasi Pemilik</h3>
+                    <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Informasi Customer</h3>
                     <dl class="space-y-4">
                         <div class="flex items-center">
-                            <img class="h-10 w-10 rounded-full" src="https://ui-avatars.com/api/?name={{ urlencode($record->pet->owner->name ?? 'Unknown') }}&color=7F9CF5&background=EBF4FF" alt="{{ $record->pet->owner->name ?? 'Unknown' }}">
+                            <img class="h-10 w-10 rounded-full" src="https://ui-avatars.com/api/?name={{ urlencode($record->pet->customer->name ?? 'Unknown') }}&color=7F9CF5&background=EBF4FF" alt="{{ $record->pet->customer->name ?? 'Unknown' }}">
                             <div class="ml-3">
-                                <dt class="text-sm font-medium text-gray-900">{{ $record->pet->owner->name ?? 'Unknown' }}</dt>
-                                <dd class="text-sm text-gray-500">{{ $record->pet->owner->email ?? 'Unknown' }}</dd>
+                                <dt class="text-sm font-medium text-gray-900">{{ $record->pet->customer->name ?? 'Unknown' }}</dt>
+                                <dd class="text-sm text-gray-500">{{ $record->pet->customer->email ?? 'Unknown' }}</dd>
                             </div>
                         </div>
-                        @if($record->pet->owner && $record->pet->owner->phone)
+                        @if($record->pet->customer && $record->pet->customer->phone)
                         <div>
                             <dt class="text-sm font-medium text-gray-500">Telepon</dt>
-                            <dd class="mt-1 text-sm text-gray-900">{{ $record->pet->owner->phone }}</dd>
+                            <dd class="mt-1 text-sm text-gray-900">{{ $record->pet->customer->phone }}</dd>
                         </div>
                         @endif
                     </dl>
                     <div class="mt-4">
-                        <a href="{{ route('owners.show', $record->pet->owner) }}" class="w-full inline-flex justify-center items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                        <a href="{{ route('customers.show', $record->pet->customer) }}" class="w-full inline-flex justify-center items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
                             <i class="fas fa-user mr-2"></i>
-                            Lihat Profil Pemilik
+                            Lihat Profil Customer
                         </a>
                     </div>
                 </div>

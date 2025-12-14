@@ -46,10 +46,10 @@
                     <legend class="sr-only">Jenis Akun</legend>
                     <div class="space-y-4">
                         <div class="flex items-center">
-                            <input id="owner" name="role" type="radio" value="owner" class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300" {{ old('role') == 'owner' ? 'checked' : 'checked' }}>
-                            <label for="owner" class="ml-3 block text-sm font-medium text-gray-700">
+                            <input id="customer" name="role" type="radio" value="customer" class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300" {{ old('role') == 'customer' ? 'checked' : 'checked' }}>
+                            <label for="customer" class="ml-3 block text-sm font-medium text-gray-700">
                                 <i class="fas fa-user mr-2 text-green-500"></i>
-                                Pemilik Hewan
+                                Customer
                                 <p class="text-xs text-gray-500">Untuk pemilik hewan peliharaan</p>
                             </label>
                         </div>
@@ -122,8 +122,8 @@
                 </div>
             </div>
 
-            <!-- Additional Information for Owners -->
-            <div id="owner-fields" class="space-y-4 hidden">
+            <!-- Additional Information for Customers -->
+            <div id="customer-fields" class="space-y-4 hidden">
                 <h3 class="text-lg font-medium text-gray-900">Informasi Tambahan</h3>
 
                 <!-- Phone -->
@@ -180,25 +180,25 @@
 </div>
 
 <script>
-    // Show/hide owner fields based on role selection
-    function toggleOwnerFields() {
-        const ownerFields = document.getElementById('owner-fields');
-        const ownerRadio = document.getElementById('owner');
+    // Show/hide customer fields based on role selection
+    function toggleCustomerFields() {
+        const customerFields = document.getElementById('customer-fields');
+        const customerRadio = document.getElementById('customer');
 
-        if (ownerRadio.checked) {
-            ownerFields.classList.remove('hidden');
+        if (customerRadio.checked) {
+            customerFields.classList.remove('hidden');
         } else {
-            ownerFields.classList.add('hidden');
+            customerFields.classList.add('hidden');
         }
     }
 
     // Initialize on page load
     document.addEventListener('DOMContentLoaded', function() {
-        toggleOwnerFields();
+        toggleCustomerFields();
 
         // Add event listeners to role radios
         document.querySelectorAll('input[name="role"]').forEach(radio => {
-            radio.addEventListener('change', toggleOwnerFields);
+            radio.addEventListener('change', toggleCustomerFields);
         });
     });
 </script>

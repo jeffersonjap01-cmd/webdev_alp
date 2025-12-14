@@ -34,6 +34,14 @@ class Pet extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
+    /**
+     * Alias relation for historical legacy naming — now `customer`.
+     */
+    public function customer()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
     public function medicalRecords()
     {
         return $this->hasMany(MedicalRecord::class);

@@ -43,9 +43,9 @@ class UserSeeder extends Seeder
             ]
         );
 
-        // Create owner users
+        // Create customer users
         User::firstOrCreate(
-            ['email' => 'owner@vetcare.com'],
+            ['email' => 'customer@vetcare.com'],
             [
                 'name' => 'Budi Santoso',
                 'password' => Hash::make('password'),
@@ -54,7 +54,7 @@ class UserSeeder extends Seeder
         );
 
         User::firstOrCreate(
-            ['email' => 'owner2@vetcare.com'],
+            ['email' => 'customer2@vetcare.com'],
             [
                 'name' => 'Siti Sarah',
                 'password' => Hash::make('password'),
@@ -63,7 +63,7 @@ class UserSeeder extends Seeder
         );
 
         User::firstOrCreate(
-            ['email' => 'owner3@vetcare.com'],
+            ['email' => 'customer3@vetcare.com'],
             [
                 'name' => 'Ahmad Wijaya',
                 'password' => Hash::make('password'),

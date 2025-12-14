@@ -35,7 +35,7 @@ class PrescriptionController extends Controller
         }
 
         // Doctor sees only prescriptions they created
-        if ($user->role === 'dokter' && $user->doctor) {
+        if ($user->role === 'doctor' && $user->doctor) {
             $query->where('doctor_id', $user->doctor->id);
         }
 

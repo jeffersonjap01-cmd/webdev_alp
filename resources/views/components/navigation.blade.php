@@ -86,8 +86,8 @@
                                         @case('vet')
                                             Dokter Hewan
                                             @break
-                                        @case('owner')
-                                            Pemilik Hewan
+                                        @case('customer')
+                                            Customer
                                             @break
                                     @endswitch
                                 </div>

@@ -40,9 +40,9 @@
                     <label for="pet_id" class="block text-sm font-medium text-blue-600">Hewan Peliharaan *</label>
                     <select name="pet_id" id="pet_id" required class="mt-1 block w-full px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-black bg-white hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-300 sm:text-sm @error('pet_id') border-red-300 @enderror">
                         <option value="">Pilih Hewan Peliharaan</option>
-                        @foreach($pets ?? \App\Models\Pet::with('user')->get() as $pet)
+                        @foreach($pets ?? \App\Models\Pet::with('customer')->get() as $pet)
                             <option value="{{ $pet->id }}" {{ old('pet_id') == $pet->id ? 'selected' : '' }}>
-                                {{ $pet->name }} - {{ $pet->user->name ?? 'No Owner' }}
+                                {{ $pet->name }} - {{ $pet->customer->name ?? 'No Customer' }}
                             </option>
                         @endforeach
                     </select>

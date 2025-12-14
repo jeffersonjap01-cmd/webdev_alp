@@ -25,7 +25,7 @@ class AppointmentController extends Controller
         }
 
         // Vets see only appointments assigned to them
-        if ($user->role === 'dokter') {
+        if ($user->role === 'doctor') {
             $doctor = $user->doctor;
             if ($doctor) {
                 $query->where('doctor_id', $doctor->id);
@@ -102,15 +102,17 @@ class AppointmentController extends Controller
     {
         $appointment = Appointment::with(['user', 'pet', 'doctor'])->findOrFail($id);
         
-        // Authorization: Only appointment owner, admin, or assigned doctor can view
+        // Authorization: Only appointment customer, admin, or assigned doctor can view
         $user = auth()->user();
         if ($user->role === 'customer' && $appointment->user_id !== $user->id) {
             abort(403, 'Unauthorized to view this appointment.');
         }
         
-        if ($user->role === 'dokter') {
+        if ($user->role === 'doctor') {
             $doctor = $user->doctor;
-            if ($doctor && $appointment->doctor_id !== $doctor->id) {
+            $assigned = $appointment->doctor;
+            // Allow if the authenticated user is linked to the assigned doctor record
+            if (!($doctor && $assigned && $doctor->id === $assigned->id) && !($assigned && $assigned->user_id === $user->id)) {
                 abort(403, 'Unauthorized to view this appointment.');
             }
         }
@@ -200,18 +202,19 @@ class AppointmentController extends Controller
             'status' => 'required|in:scheduled,confirmed,completed,cancelled'
         ]);
 
-        // Only admin and dokter can update status
+        // Only admin and doctor can update status
         $user = auth()->user();
-        if (!in_array($user->role, ['admin', 'dokter'])) {
+        if (!in_array($user->role, ['admin', 'doctor'])) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
         
         $appointment = Appointment::findOrFail($id);
         
-        // Dokter can only update their own appointments
-        if ($user->role === 'dokter') {
+        // Doctor can only update their own appointments
+        if ($user->role === 'doctor') {
             $doctor = $user->doctor;
-            if ($doctor && $appointment->doctor_id !== $doctor->id) {
+            $assigned = $appointment->doctor;
+            if (!($doctor && $assigned && $doctor->id === $assigned->id) && !($assigned && $assigned->user_id === $user->id)) {
                 return response()->json(['message' => 'Unauthorized'], 403);
             }
         }
@@ -242,18 +245,19 @@ class AppointmentController extends Controller
         $user = auth()->user();
         
         // Only doctors can accept appointments
-        if ($user->role !== 'dokter') {
+        if ($user->role !== 'doctor') {
             abort(403, 'Unauthorized');
         }
-        
+
         $appointment = Appointment::findOrFail($id);
         $doctor = $user->doctor;
-        
-        // Doctor can only accept their own appointments
-        if (!$doctor || $appointment->doctor_id !== $doctor->id) {
+        $assigned = $appointment->doctor;
+
+        // Doctor can only accept if they're linked to the assigned doctor record
+        if (!($doctor && $assigned && $doctor->id === $assigned->id) && !($assigned && $assigned->user_id === $user->id)) {
             abort(403, 'Unauthorized to accept this appointment');
         }
-        
+
         $appointment->accept();
         
         return redirect()->back()->with('success', 'Appointment accepted successfully!');
@@ -267,18 +271,19 @@ class AppointmentController extends Controller
         $user = auth()->user();
         
         // Only doctors can decline appointments
-        if ($user->role !== 'dokter') {
+        if ($user->role !== 'doctor') {
             abort(403, 'Unauthorized');
         }
-        
+
         $appointment = Appointment::findOrFail($id);
         $doctor = $user->doctor;
-        
-        // Doctor can only decline their own appointments
-        if (!$doctor || $appointment->doctor_id !== $doctor->id) {
+        $assigned = $appointment->doctor;
+
+        // Doctor can only decline if they're linked to the assigned doctor record
+        if (!($doctor && $assigned && $doctor->id === $assigned->id) && !($assigned && $assigned->user_id === $user->id)) {
             abort(403, 'Unauthorized to decline this appointment');
         }
-        
+
         $appointment->decline();
         
         return redirect()->back()->with('info', 'Appointment declined.');
@@ -292,15 +297,16 @@ class AppointmentController extends Controller
         $user = auth()->user();
         
         // Only doctors can start appointments
-        if ($user->role !== 'dokter') {
+        if ($user->role !== 'doctor') {
             abort(403, 'Unauthorized');
         }
-        
+
         $appointment = Appointment::findOrFail($id);
         $doctor = $user->doctor;
-        
+        $assigned = $appointment->doctor;
+
         // Doctor can only start their own accepted appointments
-        if (!$doctor || $appointment->doctor_id !== $doctor->id) {
+        if (!($doctor && $assigned && $doctor->id === $assigned->id) && !($assigned && $assigned->user_id === $user->id)) {
             abort(403, 'Unauthorized to start this appointment');
         }
         
@@ -310,7 +316,8 @@ class AppointmentController extends Controller
         
         $appointment->startProgress();
         
-        return redirect()->back()->with('success', 'Appointment started!');
+        // Redirect to appointment details so doctor can fill the in-progress forms
+        return redirect()->route('appointments.show', $appointment)->with('success', 'Appointment started!');
     }
 
     /**
@@ -321,15 +328,16 @@ class AppointmentController extends Controller
         $user = auth()->user();
         
         // Only doctors can complete appointments
-        if ($user->role !== 'dokter') {
+        if ($user->role !== 'doctor') {
             abort(403, 'Unauthorized');
         }
-        
+
         $appointment = Appointment::with(['pet', 'user'])->findOrFail($id);
         $doctor = $user->doctor;
-        
+        $assigned = $appointment->doctor;
+
         // Doctor can only complete their own in-progress appointments
-        if (!$doctor || $appointment->doctor_id !== $doctor->id) {
+        if (!($doctor && $assigned && $doctor->id === $assigned->id) && !($assigned && $assigned->user_id === $user->id)) {
             abort(403, 'Unauthorized to complete this appointment');
         }
         

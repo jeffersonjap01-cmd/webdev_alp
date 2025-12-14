@@ -19,12 +19,16 @@ return new class extends Migration
             // Booking info
             $table->dateTime('appointment_time');
 
-            // Status
+            // Status (expanded to include all application states)
             $table->enum('status', [
-                'pending',      // baru booking
-                'approved',     // doctor active
-                'cancelled',    // doctor inactive or customer cancel
-                'completed'     // selesai, siap buat medical record
+                'pending',      // newly booked
+                'accepted',     // doctor accepted
+                'declined',     // doctor declined
+                'in_progress',  // doctor started
+                'scheduled',    // system/confirmed schedule
+                'confirmed',    // confirmed
+                'completed',    // finished
+                'cancelled'     // cancelled by user or system
             ])->default('pending');
 
             $table->string('notes')->nullable();

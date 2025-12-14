@@ -42,8 +42,8 @@
                 </div>
             </div>
 
-            <!-- Owner Specific Info -->
-            @if($user->role === 'owner' && isset($profileData['owner_info']))
+            <!-- Customer Specific Info -->
+            @if($user->role === 'customer' && isset($profileData['owner_info']))
                 <div class="card shadow mb-4">
                     <div class="card-header py-3">
                         <h6 class="m-0 font-weight-bold text-primary">Informasi Kontak</h6>
@@ -98,8 +98,8 @@
 
         <!-- Role-specific Information -->
         <div class="col-xl-8 col-lg-7">
-            <!-- Owner Dashboard -->
-            @if($user->role === 'owner' && isset($profileData['owner_info']))
+            <!-- Customer Dashboard -->
+            @if($user->role === 'customer' && isset($profileData['owner_info']))
                 <div class="row">
                     <div class="col-xl-3 col-md-6 mb-4">
                         <div class="card border-left-primary shadow h-100 py-2">
@@ -297,7 +297,7 @@
                                 <div class="row no-gutters align-items-center">
                                     <div class="col mr-2">
                                         <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                                            Total Owners
+                                            Total Customers
                                         </div>
                                         <div class="h5 mb-0 font-weight-bold text-gray-800">
                                             {{ $profileData['admin_info']['total_owners'] }}
@@ -340,7 +340,7 @@
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        @if($user->role === 'owner')
+                        @if($user->role === 'customer')
                             <div class="col-md-4 mb-3">
                                 <a href="{{ route('pets.create') }}" class="btn btn-primary btn-block">
                                     <i class="fas fa-plus"></i> Tambah Hewan Peliharaan
@@ -369,8 +369,8 @@
                             </div>
                         @elseif($user->role === 'admin')
                             <div class="col-md-4 mb-3">
-                                <a href="{{ route('owners.create') }}" class="btn btn-primary btn-block">
-                                    <i class="fas fa-user-plus"></i> Tambah Owner
+                                <a href="{{ route('customers.create') }}" class="btn btn-primary btn-block">
+                                    <i class="fas fa-user-plus"></i> Tambah Customer
                                 </a>
                             </div>
                             <div class="col-md-4 mb-3">

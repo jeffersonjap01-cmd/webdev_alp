@@ -18,7 +18,7 @@ class DashboardController extends Controller
         
         $stats = match($user->role) {
             'admin' => $this->getAdminStats(),
-            'dokter' => $this->getVetStats($user),
+            'doctor' => $this->getVetStats($user),
             'customer' => $this->getCustomerStats($user),
             default => $this->getDefaultStats(),
         };
