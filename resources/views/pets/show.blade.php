@@ -26,7 +26,7 @@
                             </div>
                             <div class="mt-2 flex items-center text-sm text-gray-500">
                                 <i class="fas fa-user mr-1.5"></i>
-                                {{ $pet->owner->name ?? 'Unknown Owner' }}
+                                    {{ $pet->customer->name ?? 'Unknown Customer' }}
                             </div>
                             <div class="mt-2 flex items-center text-sm text-gray-500">
                                 <i class="fas fa-calendar mr-1.5"></i>
@@ -41,7 +41,7 @@
                     <i class="fas fa-arrow-left mr-2"></i>
                     Kembali
                 </a>
-                @if(in_array(auth()->user()->role, ['admin', 'owner']))
+                @if(in_array(auth()->user()->role, ['admin', 'customer']))
                 <button id="editPetBtn" onclick="toggleEditMode()" class="ml-3 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                     <i class="fas fa-edit mr-2"></i>
                     Edit
@@ -230,33 +230,33 @@
 
         <!-- Sidebar -->
         <div class="space-y-6">
-            <!-- Owner Information -->
+            <!-- Customer Information -->
             <div class="bg-white shadow rounded-lg">
                 <div class="px-4 py-5 sm:p-6">
-                    <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Informasi Pemilik</h3>
+                    <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Informasi Customer</h3>
                     <dl class="space-y-4">
                         <div class="flex items-center">
-                            <img class="h-10 w-10 rounded-full" src="https://ui-avatars.com/api/?name={{ urlencode($pet->owner->name ?? 'Unknown') }}&color=7F9CF5&background=EBF4FF" alt="{{ $pet->owner->name ?? 'Unknown' }}">
+                            <img class="h-10 w-10 rounded-full" src="https://ui-avatars.com/api/?name={{ urlencode($pet->customer->name ?? 'Unknown') }}&color=7F9CF5&background=EBF4FF" alt="{{ $pet->customer->name ?? 'Unknown' }}">
                             <div class="ml-3">
-                                <dt class="text-sm font-medium text-gray-900">{{ $pet->owner->name ?? 'Unknown' }}</dt>
-                                <dd class="text-sm text-gray-500">{{ $pet->owner->email ?? 'Unknown' }}</dd>
+                                <dt class="text-sm font-medium text-gray-900">{{ $pet->customer->name ?? 'Unknown' }}</dt>
+                                <dd class="text-sm text-gray-500">{{ $pet->customer->email ?? 'Unknown' }}</dd>
                             </div>
                         </div>
-                        @if($pet->owner && $pet->owner->phone)
+                        @if($pet->customer && $pet->customer->phone)
                         <div>
                             <dt class="text-sm font-medium text-gray-500">Telepon</dt>
-                            <dd class="mt-1 text-sm text-gray-900">{{ $pet->owner->phone }}</dd>
+                            <dd class="mt-1 text-sm text-gray-900">{{ $pet->customer->phone }}</dd>
                         </div>
                         @endif
-                        @if($pet->owner && $pet->owner->address)
+                        @if($pet->customer && $pet->customer->address)
                         <div>
                             <dt class="text-sm font-medium text-gray-500">Alamat</dt>
-                            <dd class="mt-1 text-sm text-gray-900">{{ $pet->owner->address }}</dd>
+                            <dd class="mt-1 text-sm text-gray-900">{{ $pet->customer->address }}</dd>
                         </div>
                         @endif
                     </dl>
                     <div class="mt-4">
-                        <a href="{{ route('customers.show', $pet->owner) }}" class="w-full inline-flex justify-center items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                        <a href="{{ route('customers.show', $pet->customer) }}" class="w-full inline-flex justify-center items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
                             <i class="fas fa-user mr-2"></i>
                             Lihat Profil Pemilik
                         </a>
@@ -296,7 +296,7 @@
                 <div class="px-4 py-5 sm:p-6">
                     <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Aksi Cepat</h3>
                     <div class="space-y-3">
-                        @if(in_array(auth()->user()->role, ['admin', 'owner']))
+                        @if(in_array(auth()->user()->role, ['admin', 'customer']))
                         <a href="{{ route('appointments.create') }}" class="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
                             <i class="fas fa-calendar-plus mr-2"></i>
                             Buat Janji Temu

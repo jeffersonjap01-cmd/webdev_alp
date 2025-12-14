@@ -30,30 +30,30 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
-    // Relationships
-    public function customer()
-    {
-        return $this->hasOne(Customer::class);
-    }
-
-    public function doctor()
-    {
-        return $this->hasOne(Doctor::class);
-    }
-
-    // Helper methods
+    // Role helper methods
     public function isAdmin(): bool
     {
         return $this->role === 'admin';
     }
 
-    public function isVet(): bool
+    public function isDoctor(): bool
     {
         return $this->role === 'doctor';
     }
 
-    public function isOwner(): bool
+    public function isCustomer(): bool
     {
         return $this->role === 'customer';
+    }
+
+    // Relationships
+    public function doctor()
+    {
+        return $this->hasOne(Doctor::class, 'user_id');
+    }
+
+    public function pets()
+    {
+        return $this->hasMany(Pet::class, 'user_id');
     }
 }

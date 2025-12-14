@@ -17,7 +17,7 @@ class AuthController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => ['required', 'confirmed', Password::min(8)],
-            'role' => 'required|in:admin,vet,owner',
+            'role' => 'required|in:admin,vet,user',
         ]);
 
         $user = User::create([
@@ -96,7 +96,7 @@ class AuthController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
-            'role' => 'required|in:admin,vet,owner',
+            'role' => 'required|in:admin,vet,user',
             'phone' => 'nullable|string|max:20',
             'address' => 'nullable|string',
             'terms' => 'required|accepted',
@@ -110,8 +110,8 @@ class AuthController extends Controller
             'role' => $validated['role'],
         ]);
 
-        // Create customer profile if role is owner
-        if ($validated['role'] === 'owner') {
+        // Create customer profile if role is user
+        if ($validated['role'] === 'user') {
             \App\Models\Customer::create([
                 'user_id' => $user->id,
                 'name' => $validated['name'],

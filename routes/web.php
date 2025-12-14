@@ -4,20 +4,74 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\DiagnosisController;
 use App\Http\Controllers\DoctorController;
+use App\Http\Controllers\ExaminationController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\MedicalRecordController;
+use App\Http\Controllers\MedicationController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PetController;
 use App\Http\Controllers\PrescriptionController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\VaccinationController;
-use App\Http\Controllers\DashboardController;
+
 
 // =========================
-// HOME (PUBLIC)
+// HOME (PUBLIC & DASHBOARD)
 // =========================
-Route::get('/', fn() => view('home'))->name('home');
+Route::get('/', [HomeController::class, 'index'])->name('home');
+
+// Redirect legacy dashboard route to home
+Route::get('/dashboard', function () {
+    return redirect()->route('home');
+})->name('dashboard');
+
+// =========================
+// APPOINTMENTS
+// =========================
+Route::middleware('auth')->group(function () {
+    Route::get('/doctor/examination/{appointment}', [ExaminationController::class, 'show'])->name('doctor.examination.show');
+    Route::post('/doctor/examination/{appointment}', [ExaminationController::class, 'store'])->name('doctor.examination.store');
+
+    // All authenticated users can view list and details
+    Route::get('/appointments', [AppointmentController::class, 'index'])->name('appointments');
+
+    // Customers (users) and admins can create appointments (must be before {appointment} route)
+    Route::middleware('role:customer,admin')->group(function () {
+        Route::get('/appointments/create', [AppointmentController::class, 'create'])->name('appointments.create');
+        Route::post('/appointments', [AppointmentController::class, 'store'])->name('appointments.store');
+    });
+
+    // Show appointment details (must be after /appointments/create)
+    Route::get('/appointments/{appointment}', [AppointmentController::class, 'show'])->name('appointments.show');
+
+    // Admins can edit and delete appointments
+    Route::middleware('role:admin')->group(function () {
+        Route::get('/appointments/{appointment}/edit', [AppointmentController::class, 'edit'])->name('appointments.edit');
+        Route::put('/appointments/{appointment}', [AppointmentController::class, 'update'])->name('appointments.update');
+        Route::delete('/appointments/{appointment}', [AppointmentController::class, 'destroy'])->name('appointments.destroy');
+    });
+
+    // Status update (admin and vet)
+    Route::middleware('role:admin,vet')->group(function () {
+        Route::patch('/appointments/{appointment}/status', [AppointmentController::class, 'updateStatus'])->name('appointments.status');
+    });
+
+    // Doctor workflow actions
+    Route::middleware('role:doctor')->group(function () {
+        Route::post('/appointments/{appointment}/accept', [AppointmentController::class, 'accept'])->name('appointments.accept');
+        Route::post('/appointments/{appointment}/decline', [AppointmentController::class, 'decline'])->name('appointments.decline');
+        Route::post('/appointments/{appointment}/start', [AppointmentController::class, 'start'])->name('appointments.start');
+        Route::post('/appointments/{appointment}/complete', [AppointmentController::class, 'markCompleted'])->name('appointments.complete');
+    });
+
+    // Customer can cancel pending appointments
+    Route::middleware('role:customer')->group(function () {
+        Route::post('/appointments/{appointment}/cancel', [AppointmentController::class, 'cancel'])->name('appointments.cancel');
+    });
+});
 
 
 // =========================
@@ -38,7 +92,6 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'webLogout'])->name('logout');
 
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile');
 });
 
@@ -92,28 +145,7 @@ Route::middleware('auth')->group(function () {
 
 
 // =========================
-// APPOINTMENTS
-// =========================
-Route::middleware('auth')->group(function () {
 
-    Route::get('/appointments', [AppointmentController::class, 'index'])->name('appointments');
-    Route::get('/appointments/{appointment}', [AppointmentController::class, 'show'])->name('appointments.show');
-
-    // Customer bikin appointment
-    Route::middleware('role:customer')->group(function () {
-        Route::get('/appointments/create', [AppointmentController::class, 'create'])->name('appointments.create');
-        Route::post('/appointments', [AppointmentController::class, 'store'])->name('appointments.store');
-    });
-
-    // Admin edit appointment
-    Route::middleware('role:admin')->group(function () {
-        Route::get('/appointments/{appointment}/edit', [AppointmentController::class, 'edit'])->name('appointments.edit');
-        Route::put('/appointments/{appointment}', [AppointmentController::class, 'update'])->name('appointments.update');
-        Route::delete('/appointments/{appointment}', [AppointmentController::class, 'destroy'])->name('appointments.destroy');
-    });
-
-    Route::patch('/appointments/{appointment}/status', [AppointmentController::class, 'updateStatus'])->name('appointments.status');
-});
 
 
 // =========================
@@ -129,6 +161,55 @@ Route::middleware('auth')->group(function () {
         Route::get('/medical-records/{record}/edit', [MedicalRecordController::class, 'edit'])->name('medical-records.edit');
         Route::put('/medical-records/{record}', [MedicalRecordController::class, 'update'])->name('medical-records.update');
         Route::delete('/medical-records/{record}', [MedicalRecordController::class, 'destroy'])->name('medical-records.destroy');
+    });
+});
+
+
+// =========================
+// PRESCRIPTIONS
+// =========================
+Route::middleware('auth')->group(function () {
+    Route::get('/prescriptions', [PrescriptionController::class, 'index'])->name('prescriptions');
+    Route::get('/prescriptions/{prescription}', [PrescriptionController::class, 'show'])->name('prescriptions.show');
+
+    Route::middleware('role:admin,doctor')->group(function () {
+        Route::get('/prescriptions/create', [PrescriptionController::class, 'create'])->name('prescriptions.create');
+        Route::post('/prescriptions', [PrescriptionController::class, 'store'])->name('prescriptions.store');
+        Route::get('/prescriptions/{prescription}/edit', [PrescriptionController::class, 'edit'])->name('prescriptions.edit');
+        Route::put('/prescriptions/{prescription}', [PrescriptionController::class, 'update'])->name('prescriptions.update');
+        Route::delete('/prescriptions/{prescription}', [PrescriptionController::class, 'destroy'])->name('prescriptions.destroy');
+    });
+});
+
+
+// =========================
+// MEDICATIONS
+// =========================
+Route::middleware('auth')->group(function () {
+    Route::middleware('role:admin,doctor')->group(function () {
+        Route::get('/medications', [MedicationController::class, 'index'])->name('medications');
+        Route::get('/medications/create', [MedicationController::class, 'create'])->name('medications.create');
+        Route::post('/medications', [MedicationController::class, 'store'])->name('medications.store');
+        Route::get('/medications/{medication}', [MedicationController::class, 'show'])->name('medications.show');
+        Route::get('/medications/{medication}/edit', [MedicationController::class, 'edit'])->name('medications.edit');
+        Route::put('/medications/{medication}', [MedicationController::class, 'update'])->name('medications.update');
+        Route::delete('/medications/{medication}', [MedicationController::class, 'destroy'])->name('medications.destroy');
+    });
+});
+
+
+// =========================
+// DIAGNOSES
+// =========================
+Route::middleware('auth')->group(function () {
+    Route::middleware('role:admin,doctor')->group(function () {
+        Route::get('/diagnoses', [DiagnosisController::class, 'index'])->name('diagnoses.index');
+        Route::get('/diagnoses/create', [DiagnosisController::class, 'create'])->name('diagnoses.create');
+        Route::post('/diagnoses', [DiagnosisController::class, 'store'])->name('diagnoses.store');
+        Route::get('/diagnoses/{diagnosis}', [DiagnosisController::class, 'show'])->name('diagnoses.show');
+        Route::get('/diagnoses/{diagnosis}/edit', [DiagnosisController::class, 'edit'])->name('diagnoses.edit');
+        Route::put('/diagnoses/{diagnosis}', [DiagnosisController::class, 'update'])->name('diagnoses.update');
+        Route::delete('/diagnoses/{diagnosis}', [DiagnosisController::class, 'destroy'])->name('diagnoses.destroy');
     });
 });
 
@@ -158,7 +239,7 @@ Route::middleware('auth')->group(function () {
 // =========================
 // REPORTS
 // =========================
-Route::middleware(['auth','role:admin'])->group(function () {
+Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/reports/dashboard', [ReportController::class, 'dashboard'])->name('reports.dashboard');
     Route::get('/reports/revenue', [ReportController::class, 'revenue'])->name('reports.revenue');
     Route::get('/reports/appointments', [ReportController::class, 'appointments'])->name('reports.appointments');

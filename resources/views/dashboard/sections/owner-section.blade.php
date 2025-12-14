@@ -1,4 +1,4 @@
-<!-- Owner Dashboard Section -->
+<!-- Customer Dashboard Section -->
 <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
     <!-- My Pets Overview -->
     <div class="bg-white overflow-hidden shadow rounded-lg">
@@ -95,7 +95,7 @@
 
 </div>
 
-<!-- Owner Action Cards -->
+<!-- Customer Action Cards -->
 <div class="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
     <a href="{{ route('appointments') }}" class="bg-white overflow-hidden shadow rounded-lg hover:shadow-md transition-shadow duration-200">
         <div class="p-5">

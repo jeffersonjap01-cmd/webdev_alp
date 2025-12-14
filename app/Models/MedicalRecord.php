@@ -10,20 +10,17 @@ class MedicalRecord extends Model
     use HasFactory;
 
     protected $fillable = [
+        'appointment_id',
         'pet_id',
         'doctor_id',
-        'date',
-        'diagnosis',
-        'treatment',
+        'symptoms',
         'notes',
-        'temperature',
-        'heart_rate',
+        'recommendation',
+        'record_date',
     ];
 
     protected $casts = [
-        'date' => 'date',
-        'temperature' => 'decimal:2',
-        'heart_rate' => 'integer',
+        'record_date' => 'datetime',
     ];
 
     // Relationships
@@ -40,6 +37,21 @@ class MedicalRecord extends Model
     public function prescription()
     {
         return $this->hasOne(Prescription::class);
+    }
+
+    public function diagnoses()
+    {
+        return $this->hasMany(Diagnosis::class);
+    }
+
+    public function medications()
+    {
+        return $this->hasMany(Medication::class);
+    }
+
+    public function appointment()
+    {
+        return $this->belongsTo(Appointment::class);
     }
 
     // Scopes

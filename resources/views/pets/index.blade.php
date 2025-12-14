@@ -15,7 +15,7 @@
                 Kelola data hewan peliharaan
             </p>
         </div>
-        @if(in_array(auth()->user()->role, ['admin', 'owner']))
+        @if(in_array(auth()->user()->role, ['admin', 'customer']))
         <div class="mt-4 sm:mt-0">
             <a href="{{ route('pets.create') }}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                 <i class="fas fa-plus mr-2"></i>
@@ -44,12 +44,12 @@
                 </div>
                 
                 <div>
-                    <label for="owner" class="block text-sm font-medium text-gray-700">Pemilik</label>
-                    <select name="owner" id="owner" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
-                        <option value="">Semua Pemilik</option>
-                        @foreach(\App\Models\Customer::active()->get() as $owner)
-                            <option value="{{ $owner->id }}" {{ request('owner') == $owner->id ? 'selected' : '' }}>
-                                {{ $owner->name }}
+                    <label for="customer" class="block text-sm font-medium text-gray-700">Customer</label>
+                    <select name="customer" id="customer" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                        <option value="">Semua Customer</option>
+                        @foreach(\App\Models\Customer::active()->get() as $customer)
+                            <option value="{{ $customer->id }}" {{ request('customer') == $customer->id ? 'selected' : '' }}>
+                                {{ $customer->name }}
                             </option>
                         @endforeach
                     </select>
@@ -112,7 +112,7 @@
                                             </p>
                                             <p class="mt-2 flex items-center text-sm text-gray-500 sm:mt-0 sm:ml-6">
                                                 <i class="fas fa-user mr-1.5"></i>
-                                                {{ $pet->owner->name ?? 'Unknown Owner' }}
+                                                {{ $pet->customer->name ?? 'Unknown User' }}
                                             </p>
                                         </div>
                                     </div>
@@ -135,7 +135,7 @@
                 <i class="fas fa-paw text-4xl text-gray-300 mb-4"></i>
                 <p class="text-gray-500 text-lg">Belum ada hewan peliharaan</p>
                 <p class="text-gray-400 text-sm">Mulai dengan menambahkan hewan peliharaan baru</p>
-                @if(in_array(auth()->user()->role, ['admin', 'owner']))
+                @if(in_array(auth()->user()->role, ['admin', 'customer']))
                 <div class="mt-4">
                     <a href="{{ route('pets.create') }}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
                         <i class="fas fa-plus mr-2"></i>

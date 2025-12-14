@@ -14,30 +14,55 @@ class DoctorSeeder extends Seeder
      */
     public function run(): void
     {
-        // Get vet users
-        $vet1 = User::where('email', 'vet@vetcare.com')->first();
-        $vet2 = User::where('email', 'vet2@vetcare.com')->first();
-
-        if ($vet1) {
-            Doctor::create([
-                'user_id' => $vet1->id,
-                'name' => 'Dr. Ahmad Rizki',
+        $doctors = [
+            [
                 'email' => 'vet@vetcare.com',
+                'name' => 'Dr. Ahmad Rizki',
+                'specialization' => 'General Practice',
                 'phone' => '081234567890',
-                'specialization' => 'General Veterinary Medicine',
-                'is_active' => true,
-            ]);
-        }
-
-        if ($vet2) {
-            Doctor::create([
-                'user_id' => $vet2->id,
-                'name' => 'Dr. Sari Indrawati',
+            ],
+            [
                 'email' => 'vet2@vetcare.com',
+                'name' => 'Dr. Sarah Johnson',
+                'specialization' => 'Surgery',
                 'phone' => '081234567891',
-                'specialization' => 'Small Animal Surgery',
-                'is_active' => true,
-            ]);
+            ],
+            [
+                'email' => 'vet3@vetcare.com',
+                'name' => 'Dr. Budi Santoso',
+                'specialization' => 'Internal Medicine',
+                'phone' => '081234567892',
+            ],
+            [
+                'email' => 'vet4@vetcare.com',
+                'name' => 'Dr. Lisa Chen',
+                'specialization' => 'Vaccination Specialist',
+                'phone' => '081234567893',
+            ],
+        ];
+
+        foreach ($doctors as $doctorData) {
+            $user = User::firstOrCreate(
+                ['email' => $doctorData['email']],
+                [
+                    'name' => $doctorData['name'],
+                    'password' => bcrypt('password'),
+                    'role' => 'doctor',
+                ]
+            );
+
+            if ($user) {
+                Doctor::updateOrCreate(
+                    ['user_id' => $user->id],
+                    [
+                        'name' => $doctorData['name'],
+                        'email' => $doctorData['email'],
+                        'specialization' => $doctorData['specialization'],
+                        'phone' => $doctorData['phone'],
+                        'status' => 'active', // Ensure status is 'active'
+                    ]
+                );
+            }
         }
     }
 }

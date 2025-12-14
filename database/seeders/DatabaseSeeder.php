@@ -20,6 +20,10 @@ class DatabaseSeeder extends Seeder
             DoctorSeeder::class,
             CustomerSeeder::class,
             PetSeeder::class,
+            MedicalRecordSeeder::class,
+            PrescriptionSeeder::class,
+            MedicationSeeder::class,
+            DiagnosisSeeder::class,
         ]);
     }
 }

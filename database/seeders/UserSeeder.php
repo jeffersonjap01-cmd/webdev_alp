@@ -43,9 +43,15 @@ class UserSeeder extends Seeder
             ]
         );
 
+<<<<<<< HEAD
         // Create custome users
         User::firstOrCreate(
             ['email' => 'customer@doctorcare.com'],
+=======
+        // Create customer users
+        User::firstOrCreate(
+            ['email' => 'customer@vetcare.com'],
+>>>>>>> Medication
             [
                 'name' => 'Budi Santoso',
                 'password' => Hash::make('password'),
@@ -54,7 +60,11 @@ class UserSeeder extends Seeder
         );
 
         User::firstOrCreate(
+<<<<<<< HEAD
             ['email' => 'customer2@doctorcare.com'],
+=======
+            ['email' => 'customer2@vetcare.com'],
+>>>>>>> Medication
             [
                 'name' => 'Siti Sarah',
                 'password' => Hash::make('password'),
@@ -63,14 +73,18 @@ class UserSeeder extends Seeder
         );
 
         User::firstOrCreate(
-            ['email' => 'customer3@doctorcare.com'],
+<<<<<<< HEAD
+            User::firstOrCreate(
+                ['email' => 'customer@vetcare.com'],
+            ['email' => 'customer3@vetcare.com'],
+>>>>>>> Medication
             [
                 'name' => 'Ahmad Wijaya',
                 'password' => Hash::make('password'),
                 'role' => 'customer',
             ]
         );
-
+                ['email' => 'customer2@vetcare.com'],
         // Create test user for mk@gmail.com
         User::firstOrCreate(
             ['email' => 'mk@gmail.com'],
@@ -79,6 +93,6 @@ class UserSeeder extends Seeder
                 'password' => Hash::make('password'),
                 'role' => 'customer',
             ]
-        );
+                ['email' => 'customer3@vetcare.com'],
     }
 }

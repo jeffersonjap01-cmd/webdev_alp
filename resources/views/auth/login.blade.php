@@ -105,9 +105,9 @@
                     <i class="fas fa-user-md mr-2"></i>
                     Dokter Hewan
                 </button>
-                <button onclick="fillDemoAccount('owner@vetcare.com', 'password')" class="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                <button onclick="fillDemoAccount('customer@vetcare.com', 'password')" class="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
                     <i class="fas fa-user mr-2"></i>
-                    Pemilik Hewan
+                    Customer
                 </button>
             </div>
         </div>

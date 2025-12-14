@@ -43,9 +43,9 @@
                     <label for="pet" class="block text-sm font-medium text-gray-700">Hewan</label>
                     <select name="pet" id="pet" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
                         <option value="">Semua Hewan</option>
-                        @foreach(\App\Models\Pet::with('owner')->get() as $pet)
+                        @foreach(\App\Models\Pet::with('customer')->get() as $pet)
                             <option value="{{ $pet->id }}" {{ request('pet') == $pet->id ? 'selected' : '' }}>
-                                {{ $pet->name }} - {{ $pet->owner->name ?? 'Unknown Owner' }}
+                                {{ $pet->name }} - {{ $pet->customer->name ?? 'Unknown Customer' }}
                             </option>
                         @endforeach
                     </select>
@@ -111,7 +111,7 @@
                                             </p>
                                             <p class="mt-2 flex items-center text-sm text-gray-500 sm:mt-0 sm:ml-6">
                                                 <i class="fas fa-user mr-1.5"></i>
-                                                {{ $prescription->pet->owner->name ?? 'Unknown Owner' }}
+                                                {{ $prescription->pet->customer->name ?? 'Unknown Customer' }}
                                             </p>
                                         </div>
                                     </div>

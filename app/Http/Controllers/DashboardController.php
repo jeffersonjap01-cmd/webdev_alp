@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\{Appointment, Doctor, Invoice, Owner, Pet, Vaccination, Payment};
+use App\Models\{Appointment, Doctor, Invoice, User, Pet, Vaccination, Payment};
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
@@ -18,8 +18,8 @@ class DashboardController extends Controller
         
         $stats = match($user->role) {
             'admin' => $this->getAdminStats(),
-            'vet' => $this->getVetStats($user),
-            'owner' => $this->getOwnerStats($user),
+            'doctor' => $this->getVetStats($user),
+            'customer' => $this->getCustomerStats($user),
             default => $this->getDefaultStats(),
         };
 
@@ -29,9 +29,9 @@ class DashboardController extends Controller
     private function getAdminStats()
     {
         return [
-            'total_owners' => \App\Models\Customer::count(),
+            'total_users' => \App\Models\User::where('role', 'customer')->count(),
             'total_pets' => Pet::count(),
-            'total_doctors' => Doctor::where('is_active', true)->count(),
+            'total_doctors' => Doctor::active()->count(),
             'today_appointments' => Appointment::whereDate('appointment_time', today())->count(),
             'monthly_revenue' => Payment::whereMonth('created_at', now()->month)
                 ->where('status', 'paid')
@@ -69,25 +69,19 @@ class DashboardController extends Controller
         ];
     }
 
-    private function getOwnerStats($user)
+    private function getCustomerStats($user)
     {
-        $owner = $user->customer ?? \App\Models\Customer::where('user_id', $user->id)->first();
-        
-        if (!$owner) {
-            return $this->getDefaultStats();
-        }
-        
         return [
-            'total_pets' => $owner->pets()->count(),
+            'total_pets' => Pet::where('user_id', $user->id)->count(),
             'upcoming_appointments' => Appointment::where('appointment_time', '>=', now())
-                ->whereHas('pet', fn($q) => $q->where('customer_id', $owner->id))
+                ->where('user_id', $user->id)
                 ->count(),
             'upcoming_vaccinations' => Vaccination::where('next_date', '>=', now())
                 ->where('next_date', '<=', now()->addDays(30))
-                ->whereHas('pet', fn($q) => $q->where('customer_id', $owner->id))
+                ->whereHas('pet', fn($q) => $q->where('user_id', $user->id))
                 ->count(),
             'pending_payments' => Payment::where('status', 'unpaid')
-                ->whereHas('medicalRecord.pet', fn($q) => $q->where('customer_id', $owner->id))
+                ->whereHas('medicalRecord.pet', fn($q) => $q->where('user_id', $user->id))
                 ->count(),
         ];
     }
@@ -95,7 +89,7 @@ class DashboardController extends Controller
     private function getDefaultStats()
     {
         return [
-            'total_owners' => 0,
+            'total_users' => 0,
             'total_pets' => 0,
             'total_doctors' => 0,
             'today_appointments' => 0,
@@ -120,7 +114,7 @@ class DashboardController extends Controller
                 'color' => 'blue',
             ]);
 
-        $payments = Payment::with(['medicalRecord.pet.owner'])
+        $payments = Payment::with(['medicalRecord.pet.user'])
             ->latest()
             ->take(5)
             ->get()

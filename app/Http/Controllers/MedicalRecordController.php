@@ -50,7 +50,7 @@ class MedicalRecordController extends Controller
         return view('medical-records.create', [
             'appointments' => Appointment::with(['pet.customer', 'doctor'])->get(),
             'pets'         => Pet::with('customer')->get(),
-            'doctors'      => Doctor::where('is_active', true)->get(),
+            'doctors'      => Doctor::active()->get(),
             'selectedAppointment' => $request->appointment_id
                 ? Appointment::with(['pet.customer', 'doctor'])->find($request->appointment_id)
                 : null,
@@ -100,8 +100,8 @@ class MedicalRecordController extends Controller
         }
 
         return redirect()
-            ->route('medical-records.show', $record)
-            ->with('success', 'Rekam medis berhasil dibuat!');
+            ->route('prescriptions.create', ['medical_record_id' => $record->id])
+            ->with('success', 'Rekam medis berhasil dibuat! Silakan buat resep obat.');
     }
 
     /**
@@ -140,7 +140,7 @@ class MedicalRecordController extends Controller
             'record'      => $record,
             'appointments'=> Appointment::with(['pet.customer', 'doctor'])->get(),
             'pets'        => Pet::with('customer')->get(),
-            'doctors'     => Doctor::where('is_active', true)->get(),
+            'doctors'     => Doctor::active()->get(),
         ]);
     }
 

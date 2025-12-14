@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\{Appointment, Doctor, Invoice, Owner, Pet, Vaccination};
+use App\Models\{Appointment, Doctor, Invoice, User, Pet, Vaccination};
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
@@ -31,7 +31,7 @@ class ReportController extends Controller
         }
 
         $revenue = $query->sum('total');
-        $invoices = $query->with(['owner', 'pet'])->get();
+        $invoices = $query->with(['customer', 'pet'])->get();
 
         return response()->json([
             'total_revenue' => $revenue,
@@ -45,7 +45,7 @@ class ReportController extends Controller
 
     public function appointments(Request $request)
     {
-        $query = Appointment::query()->with(['pet.owner', 'doctor']);
+        $query = Appointment::query()->with(['pet.customer', 'doctor']);
 
         // Date range filter
         if ($request->has('start_date') && $request->has('end_date')) {
@@ -80,7 +80,7 @@ class ReportController extends Controller
 
     public function patients(Request $request)
     {
-        $query = Pet::query()->with(['owner', 'appointments']);
+        $query = Pet::query()->with(['customer', 'appointments']);
 
         // Date range filter
         if ($request->has('start_date') && $request->has('end_date')) {
@@ -187,9 +187,9 @@ class ReportController extends Controller
                 'appointments' => $this->getMonthlyAppointments(),
             ],
             'recent_activities' => [
-                'latest_appointments' => Appointment::with(['pet.owner', 'doctor'])
+                'latest_appointments' => Appointment::with(['pet.customer', 'doctor'])
                     ->latest()->take(5)->get(),
-                'recent_payments' => Invoice::with('owner')
+                'recent_payments' => Invoice::with('customer')
                     ->where('status', 'paid')->latest('paid_at')->take(5)->get(),
                 'upcoming_vaccinations' => Vaccination::upcoming(7)
                     ->with('pet')->take(5)->get(),

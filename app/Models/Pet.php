@@ -11,7 +11,7 @@ class Pet extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'customer_id',
+        'user_id',
         'name',
         'species',
         'breed',
@@ -28,15 +28,18 @@ class Pet extends Model
     ];
 
     // Relationships
-    public function customer()
+
+    public function user()
     {
-        return $this->belongsTo(Customer::class, 'customer_id');
+        return $this->belongsTo(User::class, 'user_id');
     }
 
-    // Alias for customer relationship (for backward compatibility)
-    public function owner()
+    /**
+     * Alias relation for historical legacy naming — now `customer`.
+     */
+    public function customer()
     {
-        return $this->belongsTo(Customer::class, 'customer_id');
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     public function medicalRecords()
@@ -81,9 +84,9 @@ class Pet extends Model
         return $query->where('species', $species);
     }
 
-    public function scopeByOwner($query, $ownerId)
+    public function scopeByUser($query, $userId)
     {
-        return $query->where('customer_id', $ownerId);
+        return $query->where('user_id', $userId);
     }
 
     public function scopeSearch($query, $search)
