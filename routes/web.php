@@ -93,6 +93,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'webLogout'])->name('logout');
 
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile');
+    // Allow any authenticated user to edit their own profile
+    Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
 });
 
 
@@ -105,10 +108,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/customers', [CustomerController::class, 'index'])->name('customers');
     Route::get('/customers/{customer}', [CustomerController::class, 'show'])->name('customers.show');
 
-    // Hanya admin bisa CRUD customer
+    // Hanya admin bisa manage sebagian customer (edit & delete)
     Route::middleware('role:admin')->group(function () {
-        Route::get('/customers/create', [CustomerController::class, 'create'])->name('customers.create');
-        Route::post('/customers', [CustomerController::class, 'store'])->name('customers.store');
         Route::get('/customers/{customer}/edit', [CustomerController::class, 'edit'])->name('customers.edit');
         Route::put('/customers/{customer}', [CustomerController::class, 'update'])->name('customers.update');
         Route::delete('/customers/{customer}', [CustomerController::class, 'destroy'])->name('customers.destroy');
@@ -131,8 +132,8 @@ Route::middleware('auth')->group(function () {
 // =========================
 Route::middleware('auth')->group(function () {
     Route::get('/doctors', [DoctorController::class, 'index'])->name('doctors');
-    Route::get('/doctors/{doctor}', [DoctorController::class, 'show'])->name('doctors.show');
 
+    // Admin-only create/store/edit routes should be declared before the {doctor} wildcard
     Route::middleware('role:admin')->group(function () {
         Route::get('/doctors/create', [DoctorController::class, 'create'])->name('doctors.create');
         Route::post('/doctors', [DoctorController::class, 'store'])->name('doctors.store');
@@ -141,6 +142,9 @@ Route::middleware('auth')->group(function () {
         Route::delete('/doctors/{doctor}', [DoctorController::class, 'destroy'])->name('doctors.destroy');
         Route::patch('/doctors/{doctor}/toggle-status', [DoctorController::class, 'toggleStatus'])->name('doctors.toggle-status');
     });
+
+    // Show single doctor (after admin routes to avoid 'create' being interpreted as {doctor})
+    Route::get('/doctors/{doctor}', [DoctorController::class, 'show'])->name('doctors.show');
 });
 
 
