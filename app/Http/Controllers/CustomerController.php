@@ -75,7 +75,7 @@ class CustomerController extends Controller
      */
     public function create()
     {
-        return view('customers.create');
+        return redirect()->route('customers')->with('error', 'Admin tidak dapat menambah customer.');
     }
 
 
@@ -84,25 +84,7 @@ class CustomerController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $this->validateStore($request);
-
-        $user = User::create([
-            'email'    => $validated['email'],
-            'password' => Hash::make($validated['password']),
-            'name'     => $validated['name'],
-            'role'     => 'user',
-        ]);
-
-        Customer::create([
-            'user_id'  => $user->id,
-            'name'     => $validated['name'],
-            'email'    => $validated['email'],
-            'phone'    => $validated['phone'],
-            'address'  => $validated['address'],
-        ]);
-
-        return redirect()->route('customers')
-            ->with('success', 'Customer berhasil ditambahkan!');
+        return redirect()->route('customers')->with('error', 'Admin tidak dapat menambah customer.');
     }
 
 

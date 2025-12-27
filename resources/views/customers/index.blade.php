@@ -15,14 +15,7 @@
                 Kelola data customer hewan peliharaan
             </p>
         </div>
-        @if(auth()->user()->role === 'admin')
-        <div class="mt-4 sm:mt-0">
-            <a href="{{ route('customers.create') }}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                <i class="fas fa-plus mr-2"></i>
-                Tambah Customer
-            </a>
-        </div>
-        @endif
+        {{-- Admin may not create customers via UI anymore --}}
     </div>
 
     <!-- Search and Filters -->
@@ -112,14 +105,7 @@
                 <i class="fas fa-users text-4xl text-gray-300 mb-4"></i>
                 <p class="text-gray-500 text-lg">Belum ada customer</p>
                 <p class="text-gray-400 text-sm">Mulai dengan menambahkan customer baru</p>
-                @if(auth()->user()->role === 'admin')
-                <div class="mt-4">
-                    <a href="{{ route('customers.create') }}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
-                        <i class="fas fa-plus mr-2"></i>
-                        Tambah Customer Pertama
-                    </a>
-                </div>
-                @endif
+                {{-- Admin cannot add customers here; use public registration instead --}}
             </li>
             @endforelse
         </ul>

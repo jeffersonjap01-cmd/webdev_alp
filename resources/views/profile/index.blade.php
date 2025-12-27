@@ -3,391 +3,117 @@
 @section('title', 'Profil Saya')
 
 @section('content')
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <div class="page-header d-flex justify-content-between align-items-center mb-4">
-                <h1 class="h3 mb-0 text-gray-800">Profil Saya</h1>
-                <div class="d-none d-sm-inline-block">
-                    <span class="badge badge-{{ $user->role === 'admin' ? 'danger' : ($user->role === 'vet' ? 'info' : 'success') }} p-2">
-                        {{ ucfirst($user->role) }}
-                    </span>
-                </div>
-            </div>
-        </div>
+
+<div class="p-6 space-y-6">
+
+```
+<!-- HERO SECTION -->
+<div class="bg-gradient-to-r from-blue-500 to-indigo-500 rounded-2xl shadow text-white p-8 flex flex-col md:flex-row justify-between items-center">
+    <div>
+        <h1 class="text-3xl font-bold mb-1">Welcome back, {{ $user->name }} 👋</h1>
+        <p class="text-white/80">Kelola aktivitas dan informasi akun Anda di VetCare</p>
+        <span class="inline-block mt-3 px-4 py-1 rounded-full text-sm font-semibold bg-white text-blue-600">
+            {{ ucfirst($user->role) }}
+        </span>
+
+        @if(\Illuminate\Support\Facades\Route::has('profile.edit'))
+            <a href="{{ route('profile.edit') }}" class="inline-block mt-3 ml-3 px-4 py-1 rounded-full text-sm font-semibold bg-white/95 text-blue-600 shadow-sm hover:bg-white">
+                Edit Profile
+            </a>
+        @else
+            <a href="#" class="inline-block mt-3 ml-3 px-4 py-1 rounded-full text-sm font-semibold bg-white/50 text-blue-400 opacity-60 cursor-not-allowed" title="profile.edit route not defined">
+                Edit Profile
+            </a>
+        @endif
     </div>
 
-    <div class="row">
-        <!-- Basic Information Card -->
-        <div class="col-xl-4 col-lg-5">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Informasi Dasar</h6>
-                </div>
-                <div class="card-body">
-                    <div class="text-center">
-                        @if($user->role === 'vet' && isset($profileData['doctor_info']['photo_url']) && $profileData['doctor_info']['photo_url'])
-                            <img class="img-fluid rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;" 
-                                 src="{{ $profileData['doctor_info']['photo_url'] }}" alt="Foto Profil">
-                        @else
-                            <div class="bg-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
-                                 style="width: 150px; height: 150px;">
-                                <span class="text-white h1">{{ substr($user->name, 0, 1) }}</span>
-                            </div>
-                        @endif
-                        <h5 class="font-weight-bold">{{ $profileData['basic_info']['name'] }}</h5>
-                        <p class="text-muted">{{ $profileData['basic_info']['email'] }}</p>
-                        <p class="text-muted small">Anggota sejak: {{ $profileData['basic_info']['member_since'] }}</p>
-                    </div>
-                </div>
+    <div class="mt-6 md:mt-0">
+        @if($user->role === 'doctor' && !empty($profileData['doctor_info']['photo_url']))
+            <img src="{{ $profileData['doctor_info']['photo_url'] }}" class="w-32 h-32 rounded-full object-cover border-4 border-white shadow">
+        @else
+            <div class="w-32 h-32 rounded-full bg-white/20 flex items-center justify-center text-5xl font-bold">
+                {{ strtoupper(substr($user->name,0,1)) }}
             </div>
+        @endif
+    </div>
+</div>
 
-            <!-- Customer Specific Info -->
-            @if($user->role === 'customer' && isset($profileData['owner_info']))
-                <div class="card shadow mb-4">
-                    <div class="card-header py-3">
-                        <h6 class="m-0 font-weight-bold text-primary">Informasi Kontak</h6>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-sm-4"><strong>Telepon:</strong></div>
-                            <div class="col-sm-8">{{ $profileData['owner_info']['phone'] ?? 'Tidak tersedia' }}</div>
-                        </div>
-                        <hr>
-                        <div class="row">
-                            <div class="col-sm-4"><strong>Alamat:</strong></div>
-                            <div class="col-sm-8">{{ $profileData['owner_info']['address'] ?? 'Tidak tersedia' }}</div>
-                        </div>
-                    </div>
-                </div>
-            @endif
-
-            <!-- Doctor Specific Info -->
-            @if($user->role === 'vet' && isset($profileData['doctor_info']))
-                <div class="card shadow mb-4">
-                    <div class="card-header py-3">
-                        <h6 class="m-0 font-weight-bold text-primary">Informasi Profesional</h6>
-                    </div>
-                    <div class="card-body">
-                        <div class="row mb-2">
-                            <div class="col-sm-5"><strong>Telepon:</strong></div>
-                            <div class="col-sm-7">{{ $profileData['doctor_info']['phone'] ?? 'Tidak tersedia' }}</div>
-                        </div>
-                        <div class="row mb-2">
-                            <div class="col-sm-5"><strong>Spesialisasi:</strong></div>
-                            <div class="col-sm-7">{{ $profileData['doctor_info']['specialization'] ?? 'Tidak tersedia' }}</div>
-                        </div>
-                        <div class="row mb-2">
-                            <div class="col-sm-5"><strong>Status:</strong></div>
-                            <div class="col-sm-7">
-                                <span class="badge badge-{{ $profileData['doctor_info']['status'] === 'active' ? 'success' : 'warning' }}">
-                                    {{ ucfirst($profileData['doctor_info']['status']) }}
-                                </span>
-                            </div>
-                        </div>
-                        @if($profileData['doctor_info']['bio'])
-                            <div class="row">
-                                <div class="col-sm-12"><strong>Bio:</strong></div>
-                                <div class="col-sm-12 mt-2">{{ $profileData['doctor_info']['bio'] }}</div>
-                            </div>
-                        @endif
-                    </div>
-                </div>
-            @endif
+<!-- STATS -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    @if($user->role === 'admin')
+        <div class="bg-white rounded-xl shadow p-5">
+            <p class="text-sm text-gray-500">Total Users</p>
+            <p class="text-2xl font-bold">{{ $profileData['admin_info']['total_users'] }}</p>
         </div>
+        <div class="bg-white rounded-xl shadow p-5">
+            <p class="text-sm text-gray-500">Doctors</p>
+            <p class="text-2xl font-bold">{{ $profileData['admin_info']['total_doctors'] }}</p>
+        </div>
+        <div class="bg-white rounded-xl shadow p-5">
+            <p class="text-sm text-gray-500">Appointments</p>
+            <p class="text-2xl font-bold">{{ $profileData['admin_info']['total_appointments'] }}</p>
+        </div>
+    @elseif($user->role === 'customer')
+        <div class="bg-white rounded-xl shadow p-5">
+            <p class="text-sm text-gray-500">Hewan</p>
+            <p class="text-2xl font-bold">{{ $profileData['customer_info']['total_pets'] }}</p>
+        </div>
+        <div class="bg-white rounded-xl shadow p-5">
+            <p class="text-sm text-gray-500">Janji</p>
+            <p class="text-2xl font-bold">{{ $profileData['customer_info']['total_appointments'] }}</p>
+        </div>
+        <div class="bg-white rounded-xl shadow p-5">
+            <p class="text-sm text-gray-500">Tagihan</p>
+            <p class="text-2xl font-bold">{{ $profileData['customer_info']['total_invoices'] }}</p>
+        </div>
+    @elseif($user->role === 'doctor')
+        <div class="bg-white rounded-xl shadow p-5">
+            <p class="text-sm text-gray-500">Janji</p>
+            <p class="text-2xl font-bold">{{ $profileData['doctor_info']['total_appointments'] }}</p>
+        </div>
+        <div class="bg-white rounded-xl shadow p-5">
+            <p class="text-sm text-gray-500">Rekam Medis</p>
+            <p class="text-2xl font-bold">{{ $profileData['doctor_info']['total_medical_records'] }}</p>
+        </div>
+    @endif
+</div>
 
-        <!-- Role-specific Information -->
-        <div class="col-xl-8 col-lg-7">
-            <!-- Customer Dashboard -->
-            @if($user->role === 'customer' && isset($profileData['owner_info']))
-                <div class="row">
-                    <div class="col-xl-3 col-md-6 mb-4">
-                        <div class="card border-left-primary shadow h-100 py-2">
-                            <div class="card-body">
-                                <div class="row no-gutters align-items-center">
-                                    <div class="col mr-2">
-                                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                            Total Hewan Peliharaan
-                                        </div>
-                                        <div class="h5 mb-0 font-weight-bold text-gray-800">
-                                            {{ $profileData['owner_info']['total_pets'] }}
-                                        </div>
-                                    </div>
-                                    <div class="col-auto">
-                                        <i class="fas fa-paw fa-2x text-gray-300"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-xl-3 col-md-6 mb-4">
-                        <div class="card border-left-success shadow h-100 py-2">
-                            <div class="card-body">
-                                <div class="row no-gutters align-items-center">
-                                    <div class="col mr-2">
-                                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                            Total Janji Temu
-                                        </div>
-                                        <div class="h5 mb-0 font-weight-bold text-gray-800">
-                                            {{ $profileData['owner_info']['total_appointments'] }}
-                                        </div>
-                                    </div>
-                                    <div class="col-auto">
-                                        <i class="fas fa-calendar fa-2x text-gray-300"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-xl-3 col-md-6 mb-4">
-                        <div class="card border-left-info shadow h-100 py-2">
-                            <div class="card-body">
-                                <div class="row no-gutters align-items-center">
-                                    <div class="col mr-2">
-                                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                                            Total Tagihan
-                                        </div>
-                                        <div class="h5 mb-0 font-weight-bold text-gray-800">
-                                            {{ $profileData['owner_info']['total_invoices'] }}
-                                        </div>
-                                    </div>
-                                    <div class="col-auto">
-                                        <i class="fas fa-receipt fa-2x text-gray-300"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-xl-3 col-md-6 mb-4">
-                        <div class="card border-left-warning shadow h-100 py-2">
-                            <div class="card-body">
-                                <div class="row no-gutters align-items-center">
-                                    <div class="col mr-2">
-                                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                            Terdaftar Sejak
-                                        </div>
-                                        <div class="h6 mb-0 font-weight-bold text-gray-800">
-                                            {{ $profileData['owner_info']['registered_date'] }}
-                                        </div>
-                                    </div>
-                                    <div class="col-auto">
-                                        <i class="fas fa-calendar-check fa-2x text-gray-300"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+<!-- DETAIL & ACTIONS -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- DETAIL -->
+    <div class="bg-white rounded-xl shadow p-6">
+        <h2 class="text-lg font-semibold mb-4">Informasi Akun</h2>
+        <ul class="space-y-2 text-gray-600">
+            <li><strong>Email:</strong> {{ $profileData['basic_info']['email'] }}</li>
+            <li><strong>Role:</strong> {{ ucfirst($user->role) }}</li>
+            @if($user->role === 'customer')
+                <li><strong>Telepon:</strong> {{ $profileData['customer_info']['phone'] ?? '-' }}</li>
+                <li><strong>Alamat:</strong> {{ $profileData['customer_info']['address'] ?? '-' }}</li>
             @endif
-
-            <!-- Doctor Dashboard -->
-            @if($user->role === 'vet' && isset($profileData['doctor_info']))
-                <div class="row">
-                    <div class="col-xl-4 col-md-6 mb-4">
-                        <div class="card border-left-primary shadow h-100 py-2">
-                            <div class="card-body">
-                                <div class="row no-gutters align-items-center">
-                                    <div class="col mr-2">
-                                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                            Total Janji Temu
-                                        </div>
-                                        <div class="h5 mb-0 font-weight-bold text-gray-800">
-                                            {{ $profileData['doctor_info']['total_appointments'] }}
-                                        </div>
-                                    </div>
-                                    <div class="col-auto">
-                                        <i class="fas fa-calendar fa-2x text-gray-300"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-xl-4 col-md-6 mb-4">
-                        <div class="card border-left-success shadow h-100 py-2">
-                            <div class="card-body">
-                                <div class="row no-gutters align-items-center">
-                                    <div class="col mr-2">
-                                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                            Rekam Medis
-                                        </div>
-                                        <div class="h5 mb-0 font-weight-bold text-gray-800">
-                                            {{ $profileData['doctor_info']['total_medical_records'] }}
-                                        </div>
-                                    </div>
-                                    <div class="col-auto">
-                                        <i class="fas fa-file-medical fa-2x text-gray-300"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-xl-4 col-md-6 mb-4">
-                        <div class="card border-left-info shadow h-100 py-2">
-                            <div class="card-body">
-                                <div class="row no-gutters align-items-center">
-                                    <div class="col mr-2">
-                                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                                            Resep Obat
-                                        </div>
-                                        <div class="h5 mb-0 font-weight-bold text-gray-800">
-                                            {{ $profileData['doctor_info']['total_prescriptions'] }}
-                                        </div>
-                                    </div>
-                                    <div class="col-auto">
-                                        <i class="fas fa-pills fa-2x text-gray-300"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            @if($user->role === 'doctor')
+                <li><strong>Spesialisasi:</strong> {{ $profileData['doctor_info']['specialization'] ?? '-' }}</li>
             @endif
+        </ul>
+    </div>
 
-            <!-- Admin Dashboard -->
-            @if($user->role === 'admin' && isset($profileData['admin_info']))
-                <div class="row">
-                    <div class="col-xl-3 col-md-6 mb-4">
-                        <div class="card border-left-primary shadow h-100 py-2">
-                            <div class="card-body">
-                                <div class="row no-gutters align-items-center">
-                                    <div class="col mr-2">
-                                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                            Total Users
-                                        </div>
-                                        <div class="h5 mb-0 font-weight-bold text-gray-800">
-                                            {{ $profileData['admin_info']['total_users'] }}
-                                        </div>
-                                    </div>
-                                    <div class="col-auto">
-                                        <i class="fas fa-users fa-2x text-gray-300"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-xl-3 col-md-6 mb-4">
-                        <div class="card border-left-success shadow h-100 py-2">
-                            <div class="card-body">
-                                <div class="row no-gutters align-items-center">
-                                    <div class="col mr-2">
-                                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                            Total Doctors
-                                        </div>
-                                        <div class="h5 mb-0 font-weight-bold text-gray-800">
-                                            {{ $profileData['admin_info']['total_doctors'] }}
-                                        </div>
-                                    </div>
-                                    <div class="col-auto">
-                                        <i class="fas fa-user-md fa-2x text-gray-300"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-xl-3 col-md-6 mb-4">
-                        <div class="card border-left-info shadow h-100 py-2">
-                            <div class="card-body">
-                                <div class="row no-gutters align-items-center">
-                                    <div class="col mr-2">
-                                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                                            Total Customers
-                                        </div>
-                                        <div class="h5 mb-0 font-weight-bold text-gray-800">
-                                            {{ $profileData['admin_info']['total_owners'] }}
-                                        </div>
-                                    </div>
-                                    <div class="col-auto">
-                                        <i class="fas fa-user-friends fa-2x text-gray-300"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-xl-3 col-md-6 mb-4">
-                        <div class="card border-left-warning shadow h-100 py-2">
-                            <div class="card-body">
-                                <div class="row no-gutters align-items-center">
-                                    <div class="col mr-2">
-                                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                            Total Appointments
-                                        </div>
-                                        <div class="h5 mb-0 font-weight-bold text-gray-800">
-                                            {{ $profileData['admin_info']['total_appointments'] }}
-                                        </div>
-                                    </div>
-                                    <div class="col-auto">
-                                        <i class="fas fa-calendar fa-2x text-gray-300"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+    <!-- ACTIONS -->
+    <div class="bg-white rounded-xl shadow p-6">
+        <h2 class="text-lg font-semibold mb-4">Aksi Cepat</h2>
+        <div class="grid grid-cols-2 gap-4">
+            @if($user->role === 'admin')
+                <a href="{{ route('doctors.create') }}" class="btn-success">Tambah Doctor</a>
+                <a href="{{ route('reports.dashboard') }}" class="btn-info col-span-2">Laporan</a>
+            @elseif($user->role === 'customer')
+                <a href="{{ route('pets.create') }}" class="btn-primary">Tambah Hewan</a>
+                <a href="{{ route('appointments.create') }}" class="btn-success">Buat Janji</a>
+            @elseif($user->role === 'doctor')
+                <a href="{{ route('medical-records.create') }}" class="btn-primary">Rekam Medis</a>
+                <a href="{{ route('prescriptions.create') }}" class="btn-success">Resep</a>
             @endif
-
-            <!-- Quick Actions -->
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Aksi Cepat</h6>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        @if($user->role === 'customer')
-                            <div class="col-md-4 mb-3">
-                                <a href="{{ route('pets.create') }}" class="btn btn-primary btn-block">
-                                    <i class="fas fa-plus"></i> Tambah Hewan Peliharaan
-                                </a>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <a href="{{ route('appointments.create') }}" class="btn btn-success btn-block">
-                                    <i class="fas fa-calendar-plus"></i> Buat Janji Temu
-                                </a>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <a href="{{ route('pets.index') }}" class="btn btn-info btn-block">
-                                    <i class="fas fa-paw"></i> Lihat Hewan Peliharaan
-                                </a>
-                            </div>
-                        @elseif($user->role === 'vet')
-                            <div class="col-md-6 mb-3">
-                                <a href="{{ route('medical-records.create') }}" class="btn btn-primary btn-block">
-                                    <i class="fas fa-file-medical"></i> Buat Rekam Medis
-                                </a>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <a href="{{ route('prescriptions.create') }}" class="btn btn-success btn-block">
-                                    <i class="fas fa-pills"></i> Buat Resep Obat
-                                </a>
-                            </div>
-                        @elseif($user->role === 'admin')
-                            <div class="col-md-4 mb-3">
-                                <a href="{{ route('customers.create') }}" class="btn btn-primary btn-block">
-                                    <i class="fas fa-user-plus"></i> Tambah Customer
-                                </a>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <a href="{{ route('doctors.create') }}" class="btn btn-success btn-block">
-                                    <i class="fas fa-user-md"></i> Tambah Doctor
-                                </a>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <a href="{{ route('reports.dashboard') }}" class="btn btn-info btn-block">
-                                    <i class="fas fa-chart-bar"></i> Lihat Laporan
-                                </a>
-                            </div>
-                        @endif
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
+</div>
+```
+
 </div>
 @endsection
