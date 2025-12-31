@@ -24,28 +24,60 @@
 
 <body class="font-sans antialiased bg-blue-50 text-gray-700">
     <div class="min-h-screen">
-        <!-- Navigation component contains the sidebar and main content area -->
-        @include('components.navigation')
+        <!-- Navigation -->
+        @auth
+            @include('components.navigation')
+        @endauth
 
-        <!-- Footer (always rendered) -->
-        <footer class="bg-white border-t border-gray-200">
-            <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                <div class="flex justify-between items-center">
-                    <div class="text-sm text-gray-500">
-                        © 2025 VetCare. Sistem Manajemen Klinik Hewan.
-                    </div>
-                    <div class="flex items-center space-x-4">
-                        <span class="text-sm text-gray-500">
-                            Versi 1.0.0
-                        </span>
-                        <div class="flex items-center space-x-1">
-                            <div class="w-2 h-2 bg-green-400 rounded-full"></div>
-                            <span class="text-sm text-gray-500">Online</span>
+        <!-- Guest Content -->
+        @guest
+            <!-- Simple guest navigation -->
+            <header class="bg-white border-b border-gray-200">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="flex items-center justify-between h-16">
+                        <a href="{{ route('home') }}" class="flex items-center space-x-3">
+                            <i class="fas fa-paw text-2xl text-blue-600"></i>
+                            <span class="font-semibold text-lg text-gray-800">VetCare</span>
+                        </a>
+
+                        <div class="flex items-center space-x-3">
+                            <a href="{{ route('login') }}" class="text-sm font-medium text-gray-700 hover:text-blue-600">Masuk</a>
+                            <a href="{{ route('register') }}" class="ml-3 inline-flex items-center px-3 py-1.5 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">Daftar</a>
                         </div>
                     </div>
                 </div>
-            </div>
-        </footer>
+            </header>
+
+            <!-- Flash Messages -->
+            @include('components.flash-messages')
+
+            <!-- Main Content -->
+            <main class="flex-1">
+                @yield('content')
+            </main>
+        @endguest
+
+        <!-- Footer -->
+        @auth
+            <footer class="bg-white border-t border-gray-200">
+                <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                    <div class="flex justify-between items-center">
+                        <div class="text-sm text-gray-500">
+                            © 2025 VetCare. Sistem Manajemen Klinik Hewan.
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <span class="text-sm text-gray-500">
+                                Versi 1.0.0
+                            </span>
+                            <div class="flex items-center space-x-1">
+                                <div class="w-2 h-2 bg-green-400 rounded-full"></div>
+                                <span class="text-sm text-gray-500">Online</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </footer>
+        @endauth
     </div>
 
     <!-- Scripts -->

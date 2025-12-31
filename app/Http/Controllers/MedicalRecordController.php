@@ -39,7 +39,9 @@ class MedicalRecordController extends Controller
 
         $records = $query->latest()->paginate(15);
 
-        return view('medical-records.index', compact('records'));
+        return view('medical-records.index', [
+            'medicalRecords' => $records,
+        ]);
     }
 
     /**
@@ -180,7 +182,10 @@ class MedicalRecordController extends Controller
             ->latest()
             ->get();
 
-        return view('medical-records.by-pet', compact('records', 'pet'));
+        return view('medical-records.by-pet', [
+            'medicalRecords' => $records,
+            'pet' => $pet,
+        ]);
     }
 
     /**

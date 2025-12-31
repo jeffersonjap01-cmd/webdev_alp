@@ -16,7 +16,7 @@ class UserSeeder extends Seeder
     {
         // Create admin user
         User::firstOrCreate(
-            ['email' => 'admin@doctorcare.com'],
+            ['email' => 'admin@vetcare.com'],
             [
                 'name' => 'Administrator',
                 'password' => Hash::make('password'),
@@ -26,7 +26,7 @@ class UserSeeder extends Seeder
 
         // Create doctor users
         User::firstOrCreate(
-            ['email' => 'doctor@doctorcare.com'],
+            ['email' => 'doctor@vetcare.com'],
             [
                 'name' => 'Dr. Ahmad Rizki',
                 'password' => Hash::make('password'),
@@ -35,7 +35,7 @@ class UserSeeder extends Seeder
         );
 
         User::firstOrCreate(
-            ['email' => 'doctor2@doctorcare.com'],
+            ['email' => 'doctor2@vetcare.com'],
             [
                 'name' => 'Dr. Sari Indrawati',
                 'password' => Hash::make('password'),
@@ -43,15 +43,9 @@ class UserSeeder extends Seeder
             ]
         );
 
-<<<<<<< HEAD
-        // Create custome users
-        User::firstOrCreate(
-            ['email' => 'customer@doctorcare.com'],
-=======
-        // Create customer users
+        // Create customer users (these emails are used by other seeders)
         User::firstOrCreate(
             ['email' => 'customer@vetcare.com'],
->>>>>>> Medication
             [
                 'name' => 'Budi Santoso',
                 'password' => Hash::make('password'),
@@ -60,11 +54,7 @@ class UserSeeder extends Seeder
         );
 
         User::firstOrCreate(
-<<<<<<< HEAD
-            ['email' => 'customer2@doctorcare.com'],
-=======
             ['email' => 'customer2@vetcare.com'],
->>>>>>> Medication
             [
                 'name' => 'Siti Sarah',
                 'password' => Hash::make('password'),
@@ -73,19 +63,15 @@ class UserSeeder extends Seeder
         );
 
         User::firstOrCreate(
-<<<<<<< HEAD
-            User::firstOrCreate(
-                ['email' => 'customer@vetcare.com'],
             ['email' => 'customer3@vetcare.com'],
->>>>>>> Medication
             [
                 'name' => 'Ahmad Wijaya',
                 'password' => Hash::make('password'),
                 'role' => 'customer',
             ]
         );
-                ['email' => 'customer2@vetcare.com'],
-        // Create test user for mk@gmail.com
+
+        // Create test user
         User::firstOrCreate(
             ['email' => 'mk@gmail.com'],
             [
@@ -93,6 +79,6 @@ class UserSeeder extends Seeder
                 'password' => Hash::make('password'),
                 'role' => 'customer',
             ]
-                ['email' => 'customer3@vetcare.com'],
+        );
     }
 }

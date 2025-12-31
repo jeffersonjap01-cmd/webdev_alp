@@ -82,7 +82,8 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [AuthController::class, 'webLogin'])->name('login.post');
 
     Route::get('/register', [AuthController::class, 'showRegistrationForm'])->name('register');
-    Route::post('/register', [CustomerController::class, 'register'])->name('customers.register');
+    // Use AuthController::webRegister for web registration form submissions
+    Route::post('/register', [AuthController::class, 'webRegister'])->name('register.post');
 });
 
 
