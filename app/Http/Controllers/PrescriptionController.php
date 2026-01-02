@@ -6,8 +6,10 @@ use App\Models\Prescription;
 use App\Models\Medication;
 use App\Models\Pet;
 use App\Models\Doctor;
+use App\Models\MedicalRecord;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Schema;
 
 class PrescriptionController extends Controller
 {
@@ -53,8 +55,13 @@ class PrescriptionController extends Controller
         $medications = [];
         
         if ($request->has('medical_record_id')) {
-            $medicalRecord = MedicalRecord::with(['medications', 'pet', 'doctor'])->findOrFail($request->medical_record_id);
-            $medications = $medicalRecord->medications;
+            if (Schema::hasTable('medical_records')) {
+                $medicalRecord = MedicalRecord::with(['medications', 'pet', 'doctor'])->findOrFail($request->medical_record_id);
+                $medications = $medicalRecord->medications;
+            } else {
+                $medicalRecord = null;
+                $medications = [];
+            }
         }
         
         return view('prescriptions.create', [
@@ -195,7 +202,7 @@ class PrescriptionController extends Controller
         $user = Auth::user();
 
         // Users can only see their pets' prescriptions
-        if ($user->role === 'user') {
+            if ($user->role === 'customer') {
             $pet = Pet::where('id', $petId)
                 ->where('user_id', $user->id)
                 ->first();
