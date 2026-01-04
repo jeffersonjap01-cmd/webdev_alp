@@ -63,16 +63,6 @@
                         </button>
                     </form>
                     @endif
-
-                    @if(in_array($appointment->status, ['accepted', 'in_progress']))
-                    <form action="{{ route('appointments.complete', $appointment) }}" method="POST" class="inline">
-                        @csrf
-                        <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                            <i class="fas fa-check-circle mr-2"></i>
-                            Complete & Record
-                        </button>
-                    </form>
-                    @endif
                 @endif
                 
                 @if(auth()->user()->role === 'admin')
@@ -97,6 +87,27 @@
                     <i class="fas fa-trash mr-2"></i>
                     Delete
                 </button>
+                @endif
+                
+                {{-- WhatsApp Notification Buttons --}}
+                @if(auth()->user()->role === 'admin' || auth()->user()->role === 'doctor')
+                    <button 
+                        type="button"
+                        data-whatsapp-reminder="{{ $appointment->id }}"
+                        class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                        <i class="fab fa-whatsapp mr-2"></i>
+                        Send Reminder
+                    </button>
+                    
+                    @if($appointment->status === 'accepted')
+                    <button 
+                        type="button"
+                        data-whatsapp-confirmation="{{ $appointment->id }}"
+                        class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500">
+                        <i class="fab fa-whatsapp mr-2"></i>
+                        Confirm Appointment
+                    </button>
+                    @endif
                 @endif
             </div>
         </div>
@@ -217,74 +228,17 @@
             </div>
             @endif
 
-            {{-- In-progress: doctor can fill diagnosis / medical record and add prescription --}}
+            {{-- In-progress: doctor can continue examination --}}
             @if(auth()->user()->role === 'doctor' && $appointment->status === 'in_progress' && auth()->user()->doctor && auth()->user()->doctor->id === ($appointment->doctor->id ?? null))
             <div class="bg-white shadow rounded-lg">
-                <div class="px-4 py-5 sm:p-6">
-                    <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">In-Progress: Record Diagnosis & Prescribe</h3>
-
-                    <!-- Medical Record Form -->
-                    <form action="{{ route('medical-records.store') }}" method="POST" class="mb-6">
-                        @csrf
-                        <input type="hidden" name="appointment_id" value="{{ $appointment->id }}">
-                        <input type="hidden" name="doctor_id" value="{{ auth()->user()->doctor->id }}">
-                        <input type="hidden" name="pet_id" value="{{ $appointment->pet->id }}">
-
-                        <div class="grid grid-cols-1 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Symptoms</label>
-                                <textarea name="symptoms" rows="2" class="mt-1 block w-full border-gray-300 rounded-md shadow-md hover:border-blue-500 focus:border-blue-500 focus:ring focus:ring-blue-200 transition-all"></textarea>
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Notes / Treatment</label>
-                                <textarea name="notes" rows="3" class="mt-1 block w-full border-gray-300 rounded-md shadow-md hover:border-blue-500 focus:border-blue-500 focus:ring focus:ring-blue-200 transition-all"></textarea>
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Recommendation</label>
-                                <input type="text" name="recommendation" class="mt-1 block w-full border-gray-300 rounded-md shadow-md hover:border-blue-500 focus:border-blue-500 focus:ring focus:ring-blue-200 transition-all" />
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Diagnoses</label>
-                                <div class="grid grid-cols-2 gap-2 mb-2 text-xs font-semibold text-gray-600">
-                                    <div class="pl-2">Diagnosis Name</div>
-                                    <div class="pl-2">Description</div>
-                                </div>
-                                <div id="diagnoses-container" class="space-y-2">
-                                    <div class="flex gap-2">
-                                        <input type="text" name="diagnoses[0][name]" placeholder="Diagnosis name" class="block w-1/2 border-gray-300 rounded-md shadow-md hover:border-blue-500 focus:border-blue-500 focus:ring focus:ring-blue-200 transition-all" />
-                                        <input type="text" name="diagnoses[0][description]" placeholder="Description" class="block w-1/2 border-gray-300 rounded-md shadow-md hover:border-blue-500 focus:border-blue-500 focus:ring focus:ring-blue-200 transition-all" />
-                                    </div>
-                                </div>
-                                <button type="button" onclick="addDiagnosis()" class="mt-2 inline-flex items-center px-3 py-1 border border-gray-300 rounded-md text-sm hover:bg-gray-100">Add diagnosis</button>
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Medications</label>
-                                <div class="grid grid-cols-4 gap-2 mb-2 text-xs font-semibold text-gray-600">
-                                    <div class="pl-2">Name</div>
-                                    <div class="pl-2">Dosage</div>
-                                    <div class="pl-2">Frequency</div>
-                                    <div class="pl-2">Duration</div>
-                                </div>
-                                <div id="medications-container" class="space-y-2">
-                                    <div class="grid grid-cols-4 gap-2">
-                                        <input type="text" name="medications[0][name]" placeholder="Name" class="block w-full border-gray-300 rounded-md shadow-md hover:border-blue-500 focus:border-blue-500 focus:ring focus:ring-blue-200 transition-all" />
-                                        <input type="text" name="medications[0][dosage]" placeholder="Dosage" class="block w-full border-gray-300 rounded-md shadow-md hover:border-blue-500 focus:border-blue-500 focus:ring focus:ring-blue-200 transition-all" />
-                                        <input type="text" name="medications[0][frequency]" placeholder="Frequency" class="block w-full border-gray-300 rounded-md shadow-md hover:border-blue-500 focus:border-blue-500 focus:ring focus:ring-blue-200 transition-all" />
-                                        <input type="text" name="medications[0][duration]" placeholder="Duration" class="block w-full border-gray-300 rounded-md shadow-md hover:border-blue-500 focus:border-blue-500 focus:ring focus:ring-blue-200 transition-all" />
-                                    </div>
-                                </div>
-                                <button type="button" onclick="addMedication()" class="mt-2 inline-flex items-center px-3 py-1 border border-gray-300 rounded-md text-sm hover:bg-gray-100">Add medication</button>
-                            </div>
-
-                            <div class="flex justify-end">
-                                <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700">Save Medical Record</button>
-                            </div>
-                        </div>
-                    </form>
+                <div class="px-4 py-5 sm:p-6 text-center">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Examination In Progress</h3>
+                    <p class="text-sm text-gray-500 mb-4">You have already started this examination. Please continue to the examination page to record vitals, diagnosis, and prescriptions.</p>
+                    
+                    <a href="{{ route('doctor.examination.show', $appointment) }}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        <i class="fas fa-stethoscope mr-2"></i>
+                        Continue Examination
+                    </a>
                 </div>
             </div>
             @endif

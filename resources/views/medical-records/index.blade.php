@@ -73,51 +73,51 @@
         <ul class="divide-y divide-gray-200">
             @forelse($medicalRecords ?? [] as $record)
             <li>
-                <a href="{{ route('medical-records.show', $record) }}" class="block hover:bg-gray-50">
-                    <div class="px-4 py-4 sm:px-6">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center">
-                                <div class="flex-shrink-0">
-                                    <div class="h-10 w-10 rounded-full bg-red-100 flex items-center justify-center">
-                                        <i class="fas fa-file-medical text-red-600"></i>
-                                    </div>
+                <div class="px-4 py-4 sm:px-6">
+                    <div class="flex items-center justify-between">
+                        <a href="{{ route('medical-records.show', $record) }}" class="flex items-center hover:bg-gray-50 flex-1">
+                            <div class="flex-shrink-0">
+                                <div class="h-10 w-10 rounded-full bg-red-100 flex items-center justify-center">
+                                    <i class="fas fa-file-medical text-red-600"></i>
                                 </div>
-                                <div class="ml-4">
-                                    <div class="flex items-center">
-                                        <p class="text-sm font-medium text-blue-600 truncate">
-                                            {{ $record->pet->name ?? 'Unknown Pet' }}
+                            </div>
+                            <div class="ml-4">
+                                <div class="flex items-center">
+                                    <p class="text-sm font-medium text-blue-600 truncate">
+                                        {{ $record->pet->name ?? 'Unknown Pet' }}
+                                    </p>
+                                    <div class="ml-2 flex-shrink-0 flex">
+                                        <p class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                            {{ $record->doctor->name ?? 'Unknown Doctor' }}
                                         </p>
-                                        <div class="ml-2 flex-shrink-0 flex">
-                                            <p class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                                {{ $record->doctor->name ?? 'Unknown Doctor' }}
-                                            </p>
-                                        </div>
                                     </div>
-                                    <div class="mt-2 sm:flex sm:justify-between">
-                                        <div class="sm:flex">
-                                            <p class="flex items-center text-sm text-gray-500">
-                                                <i class="fas fa-diagnosis mr-1.5"></i>
-                                                {{ $record->diagnosis ?? 'No Diagnosis' }}
-                                            </p>
-                                            <p class="mt-2 flex items-center text-sm text-gray-500 sm:mt-0 sm:ml-6">
-                                                <i class="fas fa-calendar mr-1.5"></i>
-                                                {{ $record->created_at->format('d M Y') }}
-                                            </p>
-                                        </div>
+                                </div>
+                                <div class="mt-2 sm:flex sm:justify-between">
+                                    <div class="sm:flex">
+                                        <p class="flex items-center text-sm text-gray-500">
+                                            <i class="fas fa-diagnosis mr-1.5"></i>
+                                            {{ $record->diagnoses->first()->diagnosis_name ?? ($record->diagnosis ?? 'No Diagnosis') }}
+                                        </p>
+                                        <p class="mt-2 flex items-center text-sm text-gray-500 sm:mt-0 sm:ml-6">
+                                            <i class="fas fa-calendar mr-1.5"></i>
+                                            {{ $record->created_at->format('d M Y') }}
+                                        </p>
                                     </div>
                                 </div>
                             </div>
-                            <div class="text-right">
-                                <p class="text-sm text-gray-900">
-                                     {{ $record->pet->customer->name ?? 'Unknown Customer' }}
-                                </p>
-                                <p class="text-sm text-gray-500">
-                                    {{ $record->treatment ?? 'No Treatment' }}
-                                </p>
-                            </div>
+                        </a>
+                        <div class="ml-4 flex-shrink-0 flex items-center space-x-2">
+                            <a href="{{ route('medical-records.export-pdf', $record) }}" class="inline-flex items-center px-3 py-1.5 border border-blue-600 rounded-md text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" title="Export to PDF">
+                                <i class="fas fa-file-pdf mr-1"></i>
+                                PDF
+                            </a>
+                            <a href="{{ route('medical-records.show', $record) }}" class="inline-flex items-center px-3 py-1.5 border border-gray-300 rounded-md text-xs font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" title="View Details">
+                                <i class="fas fa-eye mr-1"></i>
+                                Detail
+                            </a>
                         </div>
                     </div>
-                </a>
+                </div>
             </li>
             @empty
             <li class="px-4 py-12 text-center">

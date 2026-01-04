@@ -94,30 +94,6 @@
                         </div>
                     </div>
 
-                    <!-- Billing -->
-                    <div class="bg-white shadow rounded-2xl overflow-hidden">
-                        <div class="p-6">
-                            <h3 class="text-lg font-medium text-gray-900 mb-4">Billing</h3>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label for="consultation_fee" class="block text-sm font-medium text-gray-700">Consultation Fee (Rp)</label>
-                                    <input type="number" name="consultation_fee" id="consultation_fee" step="1000"
-                                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                                        value="{{ old('consultation_fee', optional($appointment->doctor)->consultation_fee ?? '') }}"
-                                        placeholder="e.g. 200000">
-                                </div>
-                                <div>
-                                    <label for="medication_fee" class="block text-sm font-medium text-gray-700">Medication Fee (total, Rp)</label>
-                                    <input type="number" name="medication_fee" id="medication_fee" step="1000"
-                                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm"
-                                        value="{{ old('medication_fee', '') }}"
-                                        placeholder="e.g. 50000">
-                                </div>
-                            </div>
-                            <p class="mt-2 text-xs text-gray-500">Optional: enter fees manually based on patient condition. If left empty, defaults will be used.</p>
-                        </div>
-                    </div>
-
                     <!-- Diagnoses -->
                     <div class="bg-white shadow rounded-2xl overflow-hidden">
                         <div class="p-6">

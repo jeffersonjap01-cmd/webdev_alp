@@ -110,6 +110,15 @@ class PrescriptionController extends Controller
     {
         $user = Auth::user();
 
+        // Load necessary relationships
+        $prescription->load([
+            'medicalRecord.diagnoses',
+            'medicalRecord.appointment',
+            'medications',
+            'pet.user',
+            'doctor.user'
+        ]);
+
         // Customer only sees their prescriptions
         if ($user->role === 'customer') {
             if ($prescription->pet->user_id !== $user->id) {

@@ -101,7 +101,6 @@ class ExaminationController extends Controller
                         'dosage' => $med['dosage'],
                         'frequency' => $med['frequency'],
                         'duration' => $med['duration'],
-                        'notes' => $med['instructions'] ?? null,
                     ]);
                 }
             }

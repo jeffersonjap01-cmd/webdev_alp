@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="demo-token">
+    <title>WhatsApp Notifier - Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .section {
+            margin-bottom: 40px;
+        }
+
+        .section h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .demo-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-whatsapp {
+            background: #25D366;
+            color: white;
+        }
+
+        .btn-whatsapp:hover {
+            background: #20BA5A;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(37, 211, 102, 0.3);
+        }
+
+        .btn-link {
+            background: #128C7E;
+            color: white;
+        }
+
+        .btn-link:hover {
+            background: #0E7A6F;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(18, 140, 126, 0.3);
+        }
+
+        .code-block {
+            background: #f5f5f5;
+            border-left: 4px solid #25D366;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+
+        .info-box {
+            background: #e8f5e9;
+            border: 1px solid #c8e6c9;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+
+        .info-box strong {
+            color: #2e7d32;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .console-output {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+
+        .console-output .log {
+            margin: 5px 0;
+        }
+
+        .console-output .success {
+            color: #4ade80;
+        }
+
+        .console-output .error {
+            color: #f87171;
+        }
+
+        .console-output .info {
+            color: #60a5fa;
+        }
+
+        .icon {
+            width: 20px;
+            height: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📱 WhatsApp Notifier Demo</h1>
+            <p>Interactive demonstration of the JavaScript WhatsApp notification system</p>
+        </div>
+
+        <div class="content">
+            <!-- Introduction -->
+            <div class="section">
+                <h2>🎯 Overview</h2>
+                <p>
+                    This demo shows how the <strong>WhatsAppNotifier</strong> JavaScript class works. 
+                    It demonstrates sending notifications via AJAX and generating WhatsApp Web links.
+                </p>
+                <div class="info-box">
+                    <strong>Note:</strong>
+                    This is a standalone demo. In production, these buttons connect to your Laravel backend.
+                </div>
+            </div>
+
+            <!-- Demo Buttons -->
+            <div class="section">
+                <h2>🚀 Try It Out</h2>
+                <p>Click any button below to see how the JavaScript notification system works:</p>
+                
+                <div class="demo-buttons">
+                    <button class="btn btn-whatsapp" onclick="demoAppointmentReminder()">
+                        <svg class="icon" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                        </svg>
+                        Appointment Reminder
+                    </button>
+
+                    <button class="btn btn-whatsapp" onclick="demoAppointmentConfirmation()">
+                        <svg class="icon" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                        </svg>
+                        Appointment Confirmation
+                    </button>
+
+                    <button class="btn btn-whatsapp" onclick="demoPrescriptionNotification()">
+                        <svg class="icon" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                        </svg>
+                        Prescription Notification
+                    </button>
+
+                    <button class="btn btn-link" onclick="demoWhatsAppLink()">
+                        <svg class="icon" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/>
+                        </svg>
+                        Generate WhatsApp Link
+                    </button>
+                </div>
+            </div>
+
+            <!-- Code Example -->
+            <div class="section">
+                <h2>💻 JavaScript Code</h2>
+                <p>Here's how the WhatsAppNotifier class works:</p>
+                <div class="code-block">
+// Initialize the notifier<br>
+const notifier = new WhatsAppNotifier();<br>
+<br>
+// Send appointment reminder<br>
+await notifier.sendAppointmentReminder(appointmentId);<br>
+<br>
+// Send appointment confirmation<br>
+await notifier.sendAppointmentConfirmation(appointmentId);<br>
+<br>
+// Send prescription notification<br>
+await notifier.sendPrescriptionNotification(prescriptionId);<br>
+<br>
+// Get WhatsApp Web link<br>
+const link = await notifier.getWhatsAppLink({<br>
+&nbsp;&nbsp;phone: '081234567890',<br>
+&nbsp;&nbsp;message: 'Hello from VetCare!'<br>
+});
+                </div>
+            </div>
+
+            <!-- Console Output -->
+            <div class="section">
+                <h2>📊 Console Output</h2>
+                <p>Watch the console below to see JavaScript actions in real-time:</p>
+                <div class="console-output" id="console">
+                    <div class="log info">Console ready. Click buttons above to see output...</div>
+                </div>
+            </div>
+
+            <!-- Data Attributes -->
+            <div class="section">
+                <h2>🏷️ Auto-Initialization with Data Attributes</h2>
+                <p>You can use data attributes for automatic event binding:</p>
+                <div class="code-block">
+&lt;!-- Appointment reminder --&gt;<br>
+&lt;button data-whatsapp-reminder="123"&gt;<br>
+&nbsp;&nbsp;Send Reminder<br>
+&lt;/button&gt;<br>
+<br>
+&lt;!-- Appointment confirmation --&gt;<br>
+&lt;button data-whatsapp-confirmation="123"&gt;<br>
+&nbsp;&nbsp;Confirm Appointment<br>
+&lt;/button&gt;<br>
+<br>
+&lt;!-- Prescription notification --&gt;<br>
+&lt;button data-whatsapp-prescription="456"&gt;<br>
+&nbsp;&nbsp;Notify Customer<br>
+&lt;/button&gt;
+                </div>
+                <p style="margin-top: 15px; color: #128C7E; font-weight: 600;">
+                    The JavaScript class automatically finds and attaches event listeners to these buttons!
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Console logging utility
+        function logToConsole(message, type = 'info') {
+            const consoleEl = document.getElementById('console');
+            const logEntry = document.createElement('div');
+            logEntry.className = `log ${type}`;
+            logEntry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            consoleEl.appendChild(logEntry);
+            consoleEl.scrollTop = consoleEl.scrollHeight;
+        }
+
+        // Demo functions
+        function demoAppointmentReminder() {
+            logToConsole('📞 Sending appointment reminder...', 'info');
+            
+            // Simulate API call
+            setTimeout(() => {
+                logToConsole('✅ Appointment reminder sent successfully!', 'success');
+                logToConsole('Message: "🏥 VetCare Appointment Reminder - Your appointment is scheduled for..."', 'info');
+                
+                // Show mock WhatsApp link
+                const mockLink = 'https://wa.me/6281234567890?text=VetCare%20Appointment%20Reminder';
+                logToConsole(`🔗 WhatsApp link: ${mockLink}`, 'info');
+            }, 1000);
+        }
+
+        function demoAppointmentConfirmation() {
+            logToConsole('✅ Sending appointment confirmation...', 'info');
+            
+            setTimeout(() => {
+                logToConsole('✅ Appointment confirmation sent successfully!', 'success');
+                logToConsole('Message: "✅ VetCare Appointment Confirmed - Your appointment has been confirmed..."', 'info');
+                
+                const mockLink = 'https://wa.me/6281234567890?text=VetCare%20Appointment%20Confirmed';
+                logToConsole(`🔗 WhatsApp link: ${mockLink}`, 'info');
+            }, 1000);
+        }
+
+        function demoPrescriptionNotification() {
+            logToConsole('💊 Sending prescription notification...', 'info');
+            
+            setTimeout(() => {
+                logToConsole('✅ Prescription notification sent successfully!', 'success');
+                logToConsole('Message: "💊 VetCare Prescription - A new prescription has been issued..."', 'info');
+                
+                const mockLink = 'https://wa.me/6281234567890?text=VetCare%20Prescription';
+                logToConsole(`🔗 WhatsApp link: ${mockLink}`, 'info');
+            }, 1000);
+        }
+
+        function demoWhatsAppLink() {
+            logToConsole('🔗 Generating WhatsApp link...', 'info');
+            
+            setTimeout(() => {
+                const link = 'https://wa.me/6281234567890?text=Hello%20from%20VetCare!';
+                logToConsole(`✅ Link generated: ${link}`, 'success');
+                logToConsole('💡 In production, this would open WhatsApp Web in a new tab', 'info');
+                
+                // Optionally open the link (commented out to avoid unwanted popup)
+                // window.open(link, '_blank');
+            }, 500);
+        }
+
+        // Log initial message
+        logToConsole('🚀 WhatsApp Notifier Demo loaded successfully', 'success');
+        logToConsole('📱 This demonstrates the JavaScript WhatsApp notification system', 'info');
+        logToConsole('Click any button above to see it in action!', 'info');
+    </script>
+</body>
+</html>

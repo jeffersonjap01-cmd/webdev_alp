@@ -52,6 +52,11 @@ class User extends Authenticatable
         return $this->hasOne(Doctor::class, 'user_id');
     }
 
+    public function customer()
+    {
+        return $this->hasOne(Customer::class, 'user_id');
+    }
+
     public function pets()
     {
         return $this->hasMany(Pet::class, 'user_id');

@@ -86,7 +86,7 @@
                                         @case('vet')
                                             Dokter Hewan
                                             @break
-                                        @case('owner')
+                                        @case('customer')
                                             Pemilik Hewan
                                             @break
                                     @endswitch

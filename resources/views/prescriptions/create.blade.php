@@ -98,7 +98,7 @@
                             <select name="pet_id" id="pet_id" required class="mt-1 block w-full border-gray-300 rounded-md">
                                 <option value="">Pilih Hewan Peliharaan</option>
                                 @foreach($pets as $pet)
-                                    <option value="{{ $pet->id }}">{{ $pet->name }} - {{ optional($pet->user)->name ?? 'No Owner' }}</option>
+                                    <option value="{{ $pet->id }}">{{ $pet->name }} - {{ optional($pet->user)->name ?? 'No Customer' }}</option>
                                 @endforeach
                             </select>
                         </div>

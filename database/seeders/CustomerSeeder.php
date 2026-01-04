@@ -14,7 +14,7 @@ class CustomerSeeder extends Seeder
      */
     public function run(): void
     {
-        // Get test user owner
+        // Get test user customer
         $testUser = User::where('email', 'mk@gmail.com')->first();
 
         if ($testUser) {
@@ -22,48 +22,48 @@ class CustomerSeeder extends Seeder
                 ['user_id' => $testUser->id],
                 [
                     'name' => 'Test User',
-                    'phone' => '081234567895',
+                    'phone' => '085174262645',
                     'email' => 'mk@gmail.com',
                     'address' => 'Jl. Test No. 999, Jakarta',
                 ]
             );
         }
 
-        // Get owner users
-        $owner1 = User::where('email', 'owner@vetcare.com')->first();
-        if ($owner1) {
+        // Get customer users
+        $customer1 = User::where('email', 'customer@vetcare.com')->first();
+        if ($customer1) {
             Customer::firstOrCreate(
-                ['user_id' => $owner1->id],
+                ['user_id' => $customer1->id],
                 [
                     'name' => 'Budi Santoso',
-                    'phone' => '081234567892',
-                    'email' => 'owner@vetcare.com',
+                    'phone' => '085174262645',
+                    'email' => 'customer@vetcare.com',
                     'address' => 'Jl. Sudirman No. 123, Jakarta',
                 ]
             );
         }
 
-        $owner2 = User::where('email', 'owner2@vetcare.com')->first();
-        if ($owner2) {
+        $customer2 = User::where('email', 'customer2@vetcare.com')->first();
+        if ($customer2) {
             Customer::firstOrCreate(
-                ['user_id' => $owner2->id],
+                ['user_id' => $customer2->id],
                 [
                     'name' => 'Siti Sarah',
-                    'phone' => '081234567893',
-                    'email' => 'owner2@vetcare.com',
+                    'phone' => '085174262645',
+                    'email' => 'customer2@vetcare.com',
                     'address' => 'Jl. Thamrin No. 456, Jakarta',
                 ]
             );
         }
 
-        $owner3 = User::where('email', 'owner3@vetcare.com')->first();
-        if ($owner3) {
+        $customer3 = User::where('email', 'customer3@vetcare.com')->first();
+        if ($customer3) {
             Customer::firstOrCreate(
-                ['user_id' => $owner3->id],
+                ['user_id' => $customer3->id],
                 [
-                    'name' => 'Ahmad Wijaya',
-                    'phone' => '081234567894',
-                    'email' => 'owner3@vetcare.com',
+                    'name' => '`Ahmad `Wijaya',
+                    'phone' => '085174262645',
+                    'email' => 'customer3@vetcare.com',
                     'address' => 'Jl. Gatot Subroto No. 789, Jakarta',
                 ]
             );

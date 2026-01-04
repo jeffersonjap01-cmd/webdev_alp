@@ -13,6 +13,7 @@ use App\Models\Invoice;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class MedicalRecordController extends Controller
 {
@@ -25,7 +26,7 @@ class MedicalRecordController extends Controller
     {
         $user = Auth::user();
 
-        $query = MedicalRecord::with(['pet.customer.user', 'doctor.user', 'appointment']);
+        $query = MedicalRecord::with(['pet.customer.user', 'doctor.user', 'appointment', 'diagnoses']);
 
         // Customer sees only their pets
         if ($user->role === 'customer' && $user->customer) {
@@ -71,6 +72,8 @@ class MedicalRecordController extends Controller
             'doctor_id'      => 'required|exists:doctors,id',
             'pet_id'         => 'required|exists:pets,id',
             'symptoms'       => 'nullable|string',
+            'diagnosis'      => 'nullable|string',
+            'treatment'      => 'nullable|string',
             'notes'          => 'nullable|string',
             'recommendation' => 'nullable|string',
             'diagnoses'      => 'nullable|array',
@@ -203,6 +206,8 @@ class MedicalRecordController extends Controller
 
         $validated = $request->validate([
             'symptoms'       => 'nullable|string',
+            'diagnosis'      => 'nullable|string',
+            'treatment'      => 'nullable|string',
             'notes'          => 'nullable|string',
             'recommendation' => 'nullable|string',
         ]);
@@ -260,5 +265,36 @@ class MedicalRecordController extends Controller
         if (Auth::user()->role === 'customer') {
             abort(403, 'Akses ditolak.');
         }
+    }
+
+    /**
+     * Export medical record to PDF
+     */
+    public function exportPdf(MedicalRecord $record)
+    {
+        $user = Auth::user();
+
+        // Customer can only see their own pet
+        if ($user->role === 'customer') {
+            if (!$user->customer || !$record->pet || $record->pet->customer_id !== $user->customer->id) {
+                abort(403, 'Anda tidak memiliki akses untuk rekam medis ini.');
+            }
+        }
+
+        $record->load([
+            'diagnoses',
+            'medications',
+            'doctor.user',
+            'pet.customer.user',
+            'appointment',
+        ]);
+
+        $pdf = Pdf::loadView('medical-records.pdf', [
+            'medicalRecord' => $record
+        ]);
+
+        $filename = 'Medical_Record_' . $record->pet->name . '_' . date('Y-m-d') . '.pdf';
+
+        return $pdf->download($filename);
     }
 }

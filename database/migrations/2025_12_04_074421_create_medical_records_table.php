@@ -18,6 +18,8 @@ return new class extends Migration
 
             // data pemeriksaan
             $table->text('symptoms')->nullable();
+            $table->text('diagnosis')->nullable(); // diagnosis penyakit
+            $table->text('treatment')->nullable(); // tindakan dan perawatan
             $table->text('notes')->nullable(); // catatan dokter
             $table->text('recommendation')->nullable(); // saran lanjutan
 

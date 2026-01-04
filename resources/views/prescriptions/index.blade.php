@@ -111,7 +111,7 @@
                                             </p>
                                             <p class="mt-2 flex items-center text-sm text-gray-500 sm:mt-0 sm:ml-6">
                                                 <i class="fas fa-user mr-1.5"></i>
-                                                {{ $prescription->pet->customer->name ?? 'Unknown Customer' }}
+                                                {{ optional($prescription->pet->user)->name ?? 'Unknown Customer' }}
                                             </p>
                                         </div>
                                     </div>

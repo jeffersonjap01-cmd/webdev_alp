@@ -14,7 +14,8 @@ class AppointmentController extends Controller
     /**
      * Display a listing of appointments
      */
-    public function index(){   
+    public function index()
+    {
         $user = auth()->user();
         $query = Appointment::with(['user', 'pet', 'doctor'])->orderBy('appointment_time', 'desc');
 
@@ -41,7 +42,7 @@ class AppointmentController extends Controller
     public function create()
     {
         $user = auth()->user();
-        
+
         // If customer, only show their pets
         if ($user->role === 'customer') {
             $pets = Pet::where('user_id', $user->id)->with('user')->get();
@@ -60,13 +61,13 @@ class AppointmentController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'pet_id'            => 'required|exists:pets,id',
-            'doctor_id'         => 'required|exists:doctors,id',
-            'appointment_date'  => 'required|date|after_or_equal:today',
-            'appointment_time'  => 'required',
-            'service_type'      => 'required|string',
-            'duration'          => 'required|integer|min:15|max:120',
-            'notes'             => 'nullable|string',
+            'pet_id' => 'required|exists:pets,id',
+            'doctor_id' => 'required|exists:doctors,id',
+            'appointment_date' => 'required|date|after_or_equal:today',
+            'appointment_time' => 'required',
+            'service_type' => 'required|string',
+            'duration' => 'required|integer|min:15|max:120',
+            'notes' => 'nullable|string',
         ]);
 
         $doctor = Doctor::findOrFail($request->doctor_id);
@@ -81,14 +82,14 @@ class AppointmentController extends Controller
 
         // If doctor active → proceed with booking
         $appointment = Appointment::create([
-            'user_id'          => auth()->id(),
-            'pet_id'           => $request->pet_id,
-            'doctor_id'        => $request->doctor_id,
+            'user_id' => auth()->id(),
+            'pet_id' => $request->pet_id,
+            'doctor_id' => $request->doctor_id,
             'appointment_time' => $appointmentDateTime,
-            'service_type'     => $request->service_type,
-            'duration'         => $request->duration,
-            'status'           => 'pending',
-            'notes'            => $request->notes,
+            'service_type' => $request->service_type,
+            'duration' => $request->duration,
+            'status' => 'pending',
+            'notes' => $request->notes,
         ]);
 
         return redirect()->route('appointments')->with('success', 'Appointment created successfully!');
@@ -100,13 +101,13 @@ class AppointmentController extends Controller
     public function show($id)
     {
         $appointment = Appointment::with(['user', 'pet', 'doctor'])->findOrFail($id);
-        
+
         // Authorization: Only appointment customer, admin, or assigned doctor can view
         $user = auth()->user();
         if ($user->role === 'customer' && $appointment->user_id !== $user->id) {
             abort(403, 'Unauthorized to view this appointment.');
         }
-        
+
         if ($user->role === 'doctor') {
             $doctor = $user->doctor;
             $assigned = $appointment->doctor;
@@ -115,7 +116,7 @@ class AppointmentController extends Controller
                 abort(403, 'Unauthorized to view this appointment.');
             }
         }
-        
+
         return view('appointments.show', compact('appointment'));
     }
 
@@ -125,12 +126,12 @@ class AppointmentController extends Controller
     public function edit($id)
     {
         $appointment = Appointment::findOrFail($id);
-        
+
         // Only admin can edit appointments
         if (auth()->user()->role !== 'admin') {
             abort(403, 'Only administrators can edit appointments.');
         }
-        
+
         $pets = Pet::with('user')->get();
         $doctors = Doctor::active()->get();
 
@@ -145,13 +146,13 @@ class AppointmentController extends Controller
         $appointment = Appointment::findOrFail($id);
 
         $request->validate([
-            'pet_id'            => 'required|exists:pets,id',
-            'doctor_id'         => 'required|exists:doctors,id',
-            'appointment_date'  => 'required|date',
-            'appointment_time'  => 'required',
-            'service_type'      => 'required|string',
-            'duration'          => 'required|integer|min:15|max:120',
-            'notes'             => 'nullable|string',
+            'pet_id' => 'required|exists:pets,id',
+            'doctor_id' => 'required|exists:doctors,id',
+            'appointment_date' => 'required|date',
+            'appointment_time' => 'required',
+            'service_type' => 'required|string',
+            'duration' => 'required|integer|min:15|max:120',
+            'notes' => 'nullable|string',
         ]);
 
         $doctor = Doctor::findOrFail($request->doctor_id);
@@ -163,13 +164,13 @@ class AppointmentController extends Controller
         $appointmentDateTime = $request->appointment_date . ' ' . $request->appointment_time;
 
         $appointment->update([
-            'user_id'          => auth()->id(),
-            'pet_id'           => $request->pet_id,
-            'doctor_id'        => $request->doctor_id,
+            'user_id' => auth()->id(),
+            'pet_id' => $request->pet_id,
+            'doctor_id' => $request->doctor_id,
             'appointment_time' => $appointmentDateTime,
-            'service_type'     => $request->service_type,
-            'duration'         => $request->duration,
-            'notes'            => $request->notes,
+            'service_type' => $request->service_type,
+            'duration' => $request->duration,
+            'notes' => $request->notes,
         ]);
 
         return redirect()->route('appointments')->with('success', 'Appointment updated successfully!');
@@ -181,12 +182,12 @@ class AppointmentController extends Controller
     public function destroy($id)
     {
         $appointment = Appointment::findOrFail($id);
-        
+
         // Only admin can delete appointments
         if (auth()->user()->role !== 'admin') {
             abort(403, 'Only administrators can delete appointments.');
         }
-        
+
         $appointment->delete();
 
         return redirect()->route('appointments')->with('success', 'Appointment deleted successfully!');
@@ -206,9 +207,9 @@ class AppointmentController extends Controller
         if (!in_array($user->role, ['admin', 'doctor'])) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
-        
+
         $appointment = Appointment::findOrFail($id);
-        
+
         // Doctor can only update their own appointments
         if ($user->role === 'doctor') {
             $doctor = $user->doctor;
@@ -217,7 +218,7 @@ class AppointmentController extends Controller
                 return response()->json(['message' => 'Unauthorized'], 403);
             }
         }
-        
+
         $appointment->status = $request->status;
         $appointment->save();
 
@@ -242,7 +243,7 @@ class AppointmentController extends Controller
     public function accept($id)
     {
         $user = auth()->user();
-        
+
         // Only doctors can accept appointments
         if ($user->role !== 'doctor') {
             abort(403, 'Unauthorized');
@@ -258,7 +259,7 @@ class AppointmentController extends Controller
         }
 
         $appointment->accept();
-        
+
         return redirect()->back()->with('success', 'Appointment accepted successfully!');
     }
 
@@ -268,7 +269,7 @@ class AppointmentController extends Controller
     public function decline($id)
     {
         $user = auth()->user();
-        
+
         // Only doctors can decline appointments
         if ($user->role !== 'doctor') {
             abort(403, 'Unauthorized');
@@ -284,7 +285,7 @@ class AppointmentController extends Controller
         }
 
         $appointment->decline();
-        
+
         return redirect()->back()->with('info', 'Appointment declined.');
     }
 
@@ -294,7 +295,7 @@ class AppointmentController extends Controller
     public function start($id)
     {
         $user = auth()->user();
-        
+
         // Only doctors can start appointments
         if ($user->role !== 'doctor') {
             abort(403, 'Unauthorized');
@@ -308,13 +309,13 @@ class AppointmentController extends Controller
         if (!($doctor && $assigned && $doctor->id === $assigned->id) && !($assigned && $assigned->user_id === $user->id)) {
             abort(403, 'Unauthorized to start this appointment');
         }
-        
+
         if ($appointment->status !== 'accepted') {
             return redirect()->back()->withErrors(['error' => 'Only accepted appointments can be started.']);
         }
-        
+
         $appointment->startProgress();
-        
+
         // Redirect to appointment details so doctor can fill the in-progress forms
         return redirect()->route('appointments.show', $appointment)->with('success', 'Appointment started!');
     }
@@ -325,7 +326,7 @@ class AppointmentController extends Controller
     public function markCompleted($id)
     {
         $user = auth()->user();
-        
+
         // Only doctors can complete appointments
         if ($user->role !== 'doctor') {
             abort(403, 'Unauthorized');
@@ -339,13 +340,13 @@ class AppointmentController extends Controller
         if (!($doctor && $assigned && $doctor->id === $assigned->id) && !($assigned && $assigned->user_id === $user->id)) {
             abort(403, 'Unauthorized to complete this appointment');
         }
-        
+
         if (!in_array($appointment->status, ['accepted', 'in_progress'])) {
             return redirect()->back()->withErrors(['error' => 'Only accepted or in-progress appointments can be completed.']);
         }
-        
+
         $appointment->complete();
-        
+
         // Redirect based on service type
         if ($appointment->service_type === 'Vaccination') {
             return redirect()->route('vaccinations.create', ['appointment_id' => $appointment->id])

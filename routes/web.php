@@ -16,6 +16,7 @@ use App\Http\Controllers\PrescriptionController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\VaccinationController;
+use App\Http\Controllers\NotificationController;
 
 
 // =========================
@@ -66,7 +67,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/appointments/{appointment}/accept', [AppointmentController::class, 'accept'])->name('appointments.accept');
         Route::post('/appointments/{appointment}/decline', [AppointmentController::class, 'decline'])->name('appointments.decline');
         Route::post('/appointments/{appointment}/start', [AppointmentController::class, 'start'])->name('appointments.start');
-        Route::post('/appointments/{appointment}/complete', [AppointmentController::class, 'markCompleted'])->name('appointments.complete');
+
     });
 
     // Customer can cancel pending appointments
@@ -172,6 +173,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/medical-records/{record}', [MedicalRecordController::class, 'show'])
         ->name('medical-records.show');
 
+    // PDF Export route
+    Route::get('/medical-records/{record}/export-pdf', [MedicalRecordController::class, 'exportPdf'])
+        ->name('medical-records.export-pdf');
+
     Route::middleware('role:admin,doctor')->group(function () {
         Route::get('/medical-records/{record}/edit', [MedicalRecordController::class, 'edit'])
             ->name('medical-records.edit');
@@ -269,4 +274,22 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/reports/doctors', [ReportController::class, 'doctors'])->name('reports.doctors');
     Route::get('/reports/vaccinations', [ReportController::class, 'vaccinations'])->name('reports.vaccinations');
     Route::get('/reports/export/{type}', [ReportController::class, 'export'])->name('reports.export');
+});
+
+// =========================
+// WHATSAPP NOTIFICATIONS (JavaScript-triggered)
+// =========================
+Route::middleware('auth')->prefix('api/notifications')->name('notifications.')->group(function () {
+    // Send test notification
+    Route::post('/send', [NotificationController::class, 'sendTestNotification'])->name('send');
+    
+    // Get WhatsApp link (no API needed)
+    Route::post('/whatsapp-link', [NotificationController::class, 'getWhatsAppLink'])->name('whatsapp-link');
+    
+    // Appointment notifications
+    Route::post('/appointment/{appointment}/reminder', [NotificationController::class, 'sendAppointmentReminder'])->name('appointment.reminder');
+    Route::post('/appointment/{appointment}/confirmation', [NotificationController::class, 'sendAppointmentConfirmation'])->name('appointment.confirmation');
+    
+    // Prescription notifications
+    Route::post('/prescription/{prescription}/notification', [NotificationController::class, 'sendPrescriptionNotification'])->name('prescription.notification');
 });

@@ -14,6 +14,8 @@ class MedicalRecord extends Model
         'pet_id',
         'doctor_id',
         'symptoms',
+        'diagnosis',
+        'treatment',
         'notes',
         'recommendation',
         'record_date',

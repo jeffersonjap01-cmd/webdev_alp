@@ -49,16 +49,27 @@
                     </div>
                 </div>
             </div>
-            <div class="mt-4 flex md:mt-0 md:ml-4">
+            <div class="mt-4 flex flex-wrap gap-2 md:mt-0 md:ml-4">
                 <a href="{{ route('prescriptions') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                     <i class="fas fa-arrow-left mr-2"></i>
                     Kembali
                 </a>
                 @if(in_array(auth()->user()->role, ['admin', 'vet']))
-                <a href="{{ route('prescriptions.edit', $prescription) }}" class="ml-3 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                <a href="{{ route('prescriptions.edit', $prescription) }}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                     <i class="fas fa-edit mr-2"></i>
                     Edit
                 </a>
+                @endif
+                
+                {{-- WhatsApp Notification Button --}}
+                @if(auth()->user()->role === 'admin' || auth()->user()->role === 'doctor')
+                    <button 
+                        type="button"
+                        data-whatsapp-prescription="{{ $prescription->id }}"
+                        class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                        <i class="fab fa-whatsapp mr-2"></i>
+                        Notify Customer
+                    </button>
                 @endif
             </div>
         </div>
@@ -139,7 +150,7 @@
                         </a>
                     </div>
                     <div class="border border-gray-200 rounded-lg p-4">
-                        <h4 class="text-sm font-medium text-gray-900">{{ $prescription->medicalRecord->diagnosis ?? 'No Diagnosis' }}</h4>
+                        <h4 class="text-sm font-medium text-gray-900">{{ $prescription->medicalRecord->diagnoses->first()->diagnosis_name ?? ($prescription->medicalRecord->diagnosis ?? 'No Diagnosis') }}</h4>
                         <p class="text-sm text-gray-500 mt-1">{{ $prescription->medicalRecord->treatment ?? 'No Treatment' }}</p>
                         <p class="text-xs text-gray-400 mt-2">{{ $prescription->medicalRecord->created_at->format('d M Y') }}</p>
                     </div>
@@ -218,22 +229,22 @@
                     <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Informasi Customer</h3>
                     <dl class="space-y-4">
                         <div class="flex items-center">
-                            <img class="h-10 w-10 rounded-full" src="https://ui-avatars.com/api/?name={{ urlencode($prescription->pet->customer->name ?? 'Unknown') }}&color=7F9CF5&background=EBF4FF" alt="{{ $prescription->pet->customer->name ?? 'Unknown' }}">
+                            <img class="h-10 w-10 rounded-full" src="https://ui-avatars.com/api/?name={{ urlencode(optional($prescription->pet->user)->name ?? 'Unknown') }}&color=7F9CF5&background=EBF4FF" alt="{{ optional($prescription->pet->user)->name ?? 'Unknown' }}">
                             <div class="ml-3">
-                                <dt class="text-sm font-medium text-gray-900">{{ $prescription->pet->customer->name ?? 'Unknown' }}</dt>
-                                <dd class="text-sm text-gray-500">{{ $prescription->pet->customer->email ?? 'Unknown' }}</dd>
+                                <dt class="text-sm font-medium text-gray-900">{{ optional($prescription->pet->user)->name ?? 'Unknown Customer' }}</dt>
+                                <dd class="text-sm text-gray-500">{{ optional($prescription->pet->user)->email ?? 'Unknown' }}</dd>
                             </div>
                         </div>
-                        @if($prescription->pet->customer && $prescription->pet->customer->phone)
+                        @if(optional($prescription->pet->user)->phone)
                         <div>
                             <dt class="text-sm font-medium text-gray-500">Telepon</dt>
-                            <dd class="mt-1 text-sm text-gray-900">{{ $prescription->pet->customer->phone }}</dd>
+                            <dd class="mt-1 text-sm text-gray-900">{{ $prescription->pet->user->phone }}</dd>
                         </div>
                         @endif
                     </dl>
-                    @if(optional($prescription->pet)->customer)
+                    @if($prescription->pet->user)
                     <div class="mt-4">
-                        <a href="{{ route('customers.show', optional($prescription->pet->customer)->id) }}" class="w-full inline-flex justify-center items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                        <a href="{{ route('profile') }}" class="w-full inline-flex justify-center items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
                             <i class="fas fa-user mr-2"></i>
                             Lihat Profil Pemilik
                         </a>
