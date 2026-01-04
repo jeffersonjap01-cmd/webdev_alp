@@ -17,21 +17,21 @@
                     </div>
                     <div class="ml-4">
                         <h2 class="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
-                            Rekam Medis - {{ $record->pet->name ?? 'Unknown Pet' }}
+                            Rekam Medis - {{ optional($record->pet)->name ?? 'Unknown Pet' }}
                         </h2>
                         <div class="mt-1 flex flex-col sm:flex-row sm:flex-wrap sm:mt-0 sm:space-x-6">
                             <div class="mt-2 flex items-center text-sm text-gray-500">
                                 <i class="fas fa-user-md mr-1.5"></i>
-                                Dr. {{ $record->doctor->name ?? 'Unknown Doctor' }}
+                                Dr. {{ optional($record->doctor)->name ?? 'Unknown Doctor' }}
                             </div>
                             <div class="mt-2 flex items-center text-sm text-gray-500">
                                 <i class="fas fa-calendar mr-1.5"></i>
-                                {{ $record->created_at->format('d M Y, H:i') }}
+                                {{ optional($record->created_at)->format('d M Y, H:i') }}
                             </div>
                             @if($record->appointment)
                             <div class="mt-2 flex items-center text-sm text-gray-500">
                                 <i class="fas fa-calendar-check mr-1.5"></i>
-                                Janji Temu: {{ \Carbon\Carbon::parse($record->appointment->appointment_time)->format('d M Y, H:i') }}
+                                Janji Temu: {{ optional($record->appointment)->appointment_time ? \Carbon\Carbon::parse(optional($record->appointment)->appointment_time)->format('d M Y, H:i') : '' }}
                             </div>
                             @endif
                         </div>
@@ -56,37 +56,61 @@
                     <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Informasi Medis</h3>
                     <dl class="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
                         <div>
-                            <dt class="text-sm font-medium text-gray-500">Diagnosis</dt>
-                            <dd class="mt-1 text-sm text-gray-900">{{ $record->diagnosis ?? 'Tidak ada diagnosis' }}</dd>
-                        </div>
-                        <div>
                             <dt class="text-sm font-medium text-gray-500">Dokter</dt>
-                            <dd class="mt-1 text-sm text-gray-900">{{ $record->doctor->name ?? 'Unknown Doctor' }}</dd>
+                            <dd class="mt-1 text-sm text-gray-900">{{ optional($record->doctor)->name ?? 'Unknown Doctor' }}</dd>
                         </div>
                         <div>
-                            <dt class="text-sm font-medium text-gray-500">Tanggal Perawatan</dt>
-                            <dd class="mt-1 text-sm text-gray-900">{{ $record->created_at->format('d M Y, H:i') }}</dd>
+                            <dt class="text-sm font-medium text-gray-500">Diagnosis</dt>
+                            <dd class="mt-1 text-sm text-gray-900">
+                                @if($record->diagnoses && $record->diagnoses->count() > 0)
+                                    <ul class="list-disc ml-5">
+                                        @foreach($record->diagnoses as $d)
+                                            <li>{{ $d->diagnosis_name }}{{ $d->description ? ': ' . $d->description : '' }}</li>
+                                        @endforeach
+                                    </ul>
+                                @else
+                                    Tidak ada diagnosis
+                                @endif
+                            </dd>
                         </div>
+
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500">Perawatan</dt>
+                            <dd class="mt-1 text-sm text-gray-900">{{ $record->recommendation ?? $record->notes ?? 'Tidak ada perawatan yang dicatat' }}</dd>
+                        </div>
+
                         <div>
                             <dt class="text-sm font-medium text-gray-500">Biaya</dt>
-                            <dd class="mt-1 text-sm text-gray-900">{{ $record->cost ? 'Rp ' . number_format($record->cost, 0, ',', '.') : 'Tidak disebutkan' }}</dd>
+                            <dd class="mt-1 text-sm text-gray-900">
+                                @php
+                                    $invoice = null;
+                                    if(optional($record->appointment)->id) {
+                                        $invoice = \App\Models\Invoice::where('appointment_id', $record->appointment->id)->first();
+                                    }
+                                @endphp
+                                @if($invoice)
+                                    Rp {{ number_format($invoice->total, 0, ',', '.') }}
+                                @else
+                                    Tidak disebutkan
+                                @endif
+                            </dd>
                         </div>
                         @if($record->treatment)
                         <div class="sm:col-span-2">
                             <dt class="text-sm font-medium text-gray-500">Perawatan</dt>
-                            <dd class="mt-1 text-sm text-gray-900">{{ $record->treatment }}</dd>
+                            <dd class="mt-1 text-sm text-gray-900">{{ $record->treatment ?? '' }}</dd>
                         </div>
                         @endif
                         @if($record->symptoms)
                         <div class="sm:col-span-2">
                             <dt class="text-sm font-medium text-gray-500">Gejala</dt>
-                            <dd class="mt-1 text-sm text-gray-900">{{ $record->symptoms }}</dd>
+                            <dd class="mt-1 text-sm text-gray-900">{{ $record->symptoms ?? '' }}</dd>
                         </div>
                         @endif
                         @if($record->notes)
                         <div class="sm:col-span-2">
                             <dt class="text-sm font-medium text-gray-500">Catatan</dt>
-                            <dd class="mt-1 text-sm text-gray-900">{{ $record->notes }}</dd>
+                            <dd class="mt-1 text-sm text-gray-900">{{ $record->notes ?? '' }}</dd>
                         </div>
                         @endif
                     </dl>
@@ -108,26 +132,36 @@
                         <div class="border border-gray-200 rounded-lg p-4">
                             <div class="flex justify-between items-start">
                                 <div>
-                                    <h4 class="text-sm font-medium text-gray-900">{{ $prescription->medication->name ?? 'Unknown Medication' }}</h4>
-                                    <p class="text-sm text-gray-500 mt-1">{{ $prescription->dosage }}</p>
-                                    <p class="text-sm text-gray-500">{{ $prescription->frequency }} - {{ $prescription->duration }}</p>
-                                    @if($prescription->instructions)
-                                    <p class="text-sm text-gray-500 mt-1">{{ $prescription->instructions }}</p>
+                                    @if($prescription->medications && $prescription->medications->count() > 0)
+                                        @foreach($prescription->medications as $med)
+                                            <h4 class="text-sm font-medium text-gray-900">{{ $med->medicine_name ?? 'Unknown Medication' }}</h4>
+                                            <p class="text-sm text-gray-500 mt-1">{{ $med->dosage ?? '' }}</p>
+                                            <p class="text-sm text-gray-500">{{ $med->frequency ?? '' }} - {{ $med->duration ?? '' }}</p>
+                                            @if(!empty($med->notes))
+                                                <p class="text-sm text-gray-500 mt-1">{{ $med->notes }}</p>
+                                            @endif
+                                            <hr class="my-2">
+                                        @endforeach
+                                    @else
+                                        <h4 class="text-sm font-medium text-gray-900">No medications</h4>
+                                    @endif
+                                    @if(!empty($prescription->instructions))
+                                        <p class="text-sm text-gray-500 mt-1">{{ $prescription->instructions }}</p>
                                     @endif
                                 </div>
                                 <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium 
-                                    @switch($prescription->status)
+                                    @switch(optional($prescription)->status)
                                         @case('pending') bg-yellow-100 text-yellow-800 @break
                                         @case('filled') bg-green-100 text-green-800 @break
                                         @case('cancelled') bg-red-100 text-red-800 @break
                                         @default bg-gray-100 text-gray-800
                                     @endswitch
                                 ">
-                                    @switch($prescription->status)
+                                    @switch(optional($prescription)->status)
                                         @case('pending') Pending @break
                                         @case('filled') Diisi @break
                                         @case('cancelled') Dibatalkan @break
-                                        @default {{ ucfirst($prescription->status) }}
+                                        @default {{ ucfirst(optional($prescription)->status ?? '') }}
                                     @endswitch
                                 </span>
                             </div>
@@ -139,7 +173,7 @@
             @endif
 
             <!-- Attachments -->
-            @if($record->attachments && $record->attachments->count() > 0)
+            @if(method_exists($record, 'attachments') && $record->attachments && $record->attachments->count() > 0)
             <div class="bg-white shadow rounded-lg">
                 <div class="px-4 py-5 sm:p-6">
                     <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Lampiran</h3>
@@ -151,8 +185,8 @@
                                     <i class="fas fa-file text-gray-400 text-2xl"></i>
                                 </div>
                                 <div class="ml-3">
-                                    <p class="text-sm font-medium text-gray-900">{{ $attachment->name }}</p>
-                                    <p class="text-sm text-gray-500">{{ number_format($attachment->size / 1024, 1) }} KB</p>
+                                    <p class="text-sm font-medium text-gray-900">{{ $attachment->name ?? 'Attachment' }}</p>
+                                    <p class="text-sm text-gray-500">{{ isset($attachment->size) ? number_format($attachment->size / 1024, 1) . ' KB' : '' }}</p>
                                 </div>
                             </div>
                             <div class="mt-2">
@@ -181,21 +215,21 @@
                                 <i class="fas fa-paw text-blue-600"></i>
                             </div>
                             <div class="ml-3">
-                                <dt class="text-sm font-medium text-gray-900">{{ $record->pet->name ?? 'Unknown' }}</dt>
-                                <dd class="text-sm text-gray-500">{{ $record->pet->type ?? 'Unknown Type' }}</dd>
+                                <dt class="text-sm font-medium text-gray-900">{{ optional($record->pet)->name ?? 'Unknown' }}</dt>
+                                <dd class="text-sm text-gray-500">{{ optional($record->pet)->type ?? 'Unknown Type' }}</dd>
                             </div>
                         </div>
                         <div>
                             <dt class="text-sm font-medium text-gray-500">Breed</dt>
-                            <dd class="mt-1 text-sm text-gray-900">{{ $record->pet->breed ?? 'Unknown' }}</dd>
+                            <dd class="mt-1 text-sm text-gray-900">{{ optional($record->pet)->breed ?? 'Unknown' }}</dd>
                         </div>
                         <div>
                             <dt class="text-sm font-medium text-gray-500">Umur</dt>
-                            <dd class="mt-1 text-sm text-gray-900">{{ $record->pet->age ?? 'Unknown' }} tahun</dd>
+                            <dd class="mt-1 text-sm text-gray-900">{{ optional($record->pet)->age ?? 'Unknown' }} tahun</dd>
                         </div>
                         <div>
                             <dt class="text-sm font-medium text-gray-500">Berat</dt>
-                            <dd class="mt-1 text-sm text-gray-900">{{ $record->pet->weight ?? 'Unknown' }} kg</dd>
+                            <dd class="mt-1 text-sm text-gray-900">{{ optional($record->pet)->weight ?? 'Unknown' }} kg</dd>
                         </div>
                     </dl>
                     <div class="mt-4">
@@ -213,25 +247,27 @@
                     <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Informasi Customer</h3>
                     <dl class="space-y-4">
                         <div class="flex items-center">
-                            <img class="h-10 w-10 rounded-full" src="https://ui-avatars.com/api/?name={{ urlencode($record->pet->customer->name ?? 'Unknown') }}&color=7F9CF5&background=EBF4FF" alt="{{ $record->pet->customer->name ?? 'Unknown' }}">
+                            <img class="h-10 w-10 rounded-full" src="https://ui-avatars.com/api/?name={{ urlencode(optional(optional($record->pet)->customer)->name ?? 'Unknown') }}&color=7F9CF5&background=EBF4FF" alt="{{ optional(optional($record->pet)->customer)->name ?? 'Unknown' }}">
                             <div class="ml-3">
-                                <dt class="text-sm font-medium text-gray-900">{{ $record->pet->customer->name ?? 'Unknown' }}</dt>
-                                <dd class="text-sm text-gray-500">{{ $record->pet->customer->email ?? 'Unknown' }}</dd>
+                                <dt class="text-sm font-medium text-gray-900">{{ optional(optional($record->pet)->customer)->name ?? 'Unknown' }}</dt>
+                                <dd class="text-sm text-gray-500">{{ optional(optional($record->pet)->customer)->email ?? 'Unknown' }}</dd>
                             </div>
                         </div>
-                        @if($record->pet->customer && $record->pet->customer->phone)
+                        @if(optional(optional($record->pet)->customer)->phone)
                         <div>
                             <dt class="text-sm font-medium text-gray-500">Telepon</dt>
-                            <dd class="mt-1 text-sm text-gray-900">{{ $record->pet->customer->phone }}</dd>
+                            <dd class="mt-1 text-sm text-gray-900">{{ optional(optional($record->pet)->customer)->phone }}</dd>
                         </div>
                         @endif
                     </dl>
+                    @if(optional($record->pet)->customer)
                     <div class="mt-4">
-                        <a href="{{ route('customers.show', $record->pet->customer) }}" class="w-full inline-flex justify-center items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                        <a href="{{ route('customers.show', optional($record->pet->customer)->id) }}" class="w-full inline-flex justify-center items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
                             <i class="fas fa-user mr-2"></i>
                             Lihat Profil Customer
                         </a>
                     </div>
+                    @endif
                 </div>
             </div>
 

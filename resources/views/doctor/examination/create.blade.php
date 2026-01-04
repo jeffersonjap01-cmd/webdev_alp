@@ -1,6 +1,6 @@
 @extends('layouts.main')
 
-@section('title', 'Examination - ' . $appointment->pet->name)
+@section('title', 'Examination - ' . optional($appointment->pet)->name)
 
 @section('content')
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" x-data="examinationForm()">
@@ -9,10 +9,10 @@
         <div class="md:flex md:items-center md:justify-between mb-8">
             <div class="flex-1 min-w-0">
                 <h2 class="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
-                    Examination: {{ $appointment->pet->name }}
+                    Examination: {{ optional($appointment->pet)->name ?? 'Unknown' }}
                 </h2>
-                <p class="mt-1 text-sm text-gray-500">
-                    Patient ID: #{{ $appointment->pet->id }} | Owner: {{ $appointment->pet->user->name }}
+                    <p class="mt-1 text-sm text-gray-500">
+                    Patient ID: #{{ optional($appointment->pet)->id ?? '-' }} | Owner: {{ optional(optional($appointment->pet)->user)->name ?? 'Unknown' }}
                 </p>
             </div>
         </div>
@@ -30,19 +30,19 @@
                             <div class="space-y-4">
                                 <div>
                                     <label class="text-xs font-semibold text-gray-400 uppercase">Breed</label>
-                                    <p class="text-gray-700">{{ $appointment->pet->breed ?? 'Unknown' }}</p>
+                                    <p class="text-gray-700">{{ optional($appointment->pet)->breed ?? 'Unknown' }}</p>
                                 </div>
                                 <div>
                                     <label class="text-xs font-semibold text-gray-400 uppercase">Age</label>
-                                    <p class="text-gray-700">{{ $appointment->pet->age ?? 'Unknown' }} years</p>
+                                    <p class="text-gray-700">{{ optional($appointment->pet)->age ?? 'Unknown' }} years</p>
                                 </div>
                                 <div>
                                     <label class="text-xs font-semibold text-gray-400 uppercase">Weight</label>
-                                    <p class="text-gray-700">{{ $appointment->pet->weight ?? 'N/A' }} kg</p>
+                                    <p class="text-gray-700">{{ optional($appointment->pet)->weight ?? 'N/A' }} kg</p>
                                 </div>
                                 <div>
                                     <label class="text-xs font-semibold text-gray-400 uppercase">Gender</label>
-                                    <p class="text-gray-700">{{ ucfirst($appointment->pet->gender) }}</p>
+                                    <p class="text-gray-700">{{ optional($appointment->pet)->gender ? ucfirst(optional($appointment->pet)->gender) : 'Unknown' }}</p>
                                 </div>
                             </div>
                         </div>
@@ -72,7 +72,7 @@
                                         (kg)</label>
                                     <input type="number" step="0.1" name="weight" id="weight" required
                                         class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                                        value="{{ $appointment->pet->weight }}">
+                                        value="{{ optional($appointment->pet)->weight }}">
                                 </div>
                             </div>
                         </div>
@@ -91,6 +91,30 @@
                                     class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                                     placeholder="Describe chief complaint, observations, and physical exam findings..."></textarea>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Billing -->
+                    <div class="bg-white shadow rounded-2xl overflow-hidden">
+                        <div class="p-6">
+                            <h3 class="text-lg font-medium text-gray-900 mb-4">Billing</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label for="consultation_fee" class="block text-sm font-medium text-gray-700">Consultation Fee (Rp)</label>
+                                    <input type="number" name="consultation_fee" id="consultation_fee" step="1000"
+                                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                        value="{{ old('consultation_fee', optional($appointment->doctor)->consultation_fee ?? '') }}"
+                                        placeholder="e.g. 200000">
+                                </div>
+                                <div>
+                                    <label for="medication_fee" class="block text-sm font-medium text-gray-700">Medication Fee (total, Rp)</label>
+                                    <input type="number" name="medication_fee" id="medication_fee" step="1000"
+                                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm"
+                                        value="{{ old('medication_fee', '') }}"
+                                        placeholder="e.g. 50000">
+                                </div>
+                            </div>
+                            <p class="mt-2 text-xs text-gray-500">Optional: enter fees manually based on patient condition. If left empty, defaults will be used.</p>
                         </div>
                     </div>
 

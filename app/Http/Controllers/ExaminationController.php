@@ -15,8 +15,8 @@ class ExaminationController extends Controller
 {
     public function show(Appointment $appointment)
     {
-        // Ensure the appointment belongs to the logged-in doctor
-        if ($appointment->doctor_id !== auth()->user()->doctor->id) {
+        // Ensure the user is a doctor and the appointment belongs to them
+        if (! auth()->user() || ! auth()->user()->doctor || $appointment->doctor_id !== auth()->user()->doctor->id) {
             abort(403, 'Unauthorized access to this appointment.');
         }
 
@@ -34,11 +34,18 @@ class ExaminationController extends Controller
 
     public function store(Request $request, Appointment $appointment)
     {
+        // Ensure the user is a doctor and the appointment belongs to them
+        if (! auth()->user() || ! auth()->user()->doctor || $appointment->doctor_id !== auth()->user()->doctor->id) {
+            abort(403, 'Unauthorized access to this appointment.');
+        }
+
         $validated = $request->validate([
             'temperature' => 'required|numeric',
             'weight' => 'required|numeric', // Assuming weight is useful, though model might need update if column exists. Checking MR model, it has temp/heart_rate. Let's stick to MR columns.
             'heart_rate' => 'required|numeric',
             'notes' => 'required|string',
+            'consultation_fee' => 'nullable|numeric|min:0',
+            'medication_fee' => 'nullable|numeric|min:0',
             'diagnoses' => 'required|array|min:1',
             'diagnoses.*.name' => 'required|string',
             'diagnoses.*.description' => 'required|string',
@@ -50,17 +57,19 @@ class ExaminationController extends Controller
             'medications.*.instructions' => 'nullable|string',
         ]);
 
-        DB::transaction(function () use ($request, $appointment, $validated) {
-            // 1. Create Medical Record
+        $prescription = null;
+        $medicalRecord = null;
+
+        DB::transaction(function () use ($request, $appointment, $validated, &$prescription, &$medicalRecord) {
+            // 1. Create Medical Record (use fields present in medical_records table)
             $medicalRecord = MedicalRecord::create([
+                'appointment_id' => $appointment->id,
                 'pet_id' => $appointment->pet_id,
                 'doctor_id' => $appointment->doctor_id,
-                'date' => now(),
-                'temperature' => $validated['temperature'],
-                'heart_rate' => $validated['heart_rate'],
-                'notes' => $validated['notes'],
-                'diagnosis' => $validated['diagnoses'][0]['name'], // Fallback for single column if exists, but we use relation
-                'treatment' => 'Examination and Prescription', // Default description
+                'symptoms' => implode("; ", array_map(fn($d) => ($d['name'] ?? '') . ' ' . ($d['description'] ?? ''), $validated['diagnoses'])),
+                'notes' => "Temperature: {$validated['temperature']}, Heart rate: {$validated['heart_rate']}. " . $validated['notes'],
+                'recommendation' => 'Examination and Prescription',
+                'record_date' => now(),
             ]);
 
             // 2. Save Diagnoses
@@ -87,7 +96,8 @@ class ExaminationController extends Controller
                 foreach ($request->medications as $med) {
                     Medication::create([
                         'prescription_id' => $prescription->id,
-                        'name' => $med['name'],
+                        'medical_record_id' => $medicalRecord->id,
+                        'medicine_name' => $med['name'],
                         'dosage' => $med['dosage'],
                         'frequency' => $med['frequency'],
                         'duration' => $med['duration'],
@@ -101,9 +111,19 @@ class ExaminationController extends Controller
             $appointment->save();
 
             // 5. Generate Invoice
-            // Base consultation fee + fee per medication? Let's simplify: Base fee 150000 + 50000 per med
-            $consultationFee = 150000;
-            $medicationFee = !empty($request->medications) ? count($request->medications) * 50000 : 0;
+            // Determine consultation and medication fees; prefer manual inputs from the form when provided
+            $doctor = \App\Models\Doctor::find($appointment->doctor_id);
+            $defaultConsultation = $doctor && isset($doctor->consultation_fee)
+                ? $doctor->consultation_fee
+                : (int) env('CONSULTATION_FEE', 150000);
+            $medicationUnitFee = (int) env('MEDICATION_FEE', 50000);
+
+            $consultationFee = $request->filled('consultation_fee') ? (float) $request->consultation_fee : $defaultConsultation;
+            if ($request->filled('medication_fee')) {
+                $medicationFee = (float) $request->medication_fee;
+            } else {
+                $medicationFee = !empty($request->medications) ? count($request->medications) * $medicationUnitFee : 0;
+            }
 
             $subtotal = $consultationFee + $medicationFee;
             $tax = $subtotal * 0.11; // 11% VAT
@@ -122,8 +142,14 @@ class ExaminationController extends Controller
             ]);
 
             // Create Invoice Items logic could go here if InvoiceItem model exists, but trying to keep simple based on request scope.
+            // end transaction
         });
 
-        return redirect()->route('home')->with('success', 'Examination completed successfully.');
+        // Redirect: if prescription was created, show it; otherwise show medical record
+        if (!empty($prescription) && isset($prescription)) {
+            return redirect()->route('prescriptions.show', $prescription)->with('success', 'Examination completed successfully.');
+        }
+
+        return redirect()->route('medical-records.show', $medicalRecord)->with('success', 'Examination completed successfully.');
     }
 }

@@ -95,7 +95,7 @@
                                     </div>
                                     <div>
                                         <p class="text-sm font-medium text-gray-900">
-                                            {{ $apt->pet->name }} <span class="text-gray-500">({{ $apt->pet->user->name }})</span>
+                                            {{ optional($apt->pet)->name ?? 'Unknown' }} <span class="text-gray-500">({{ optional(optional($apt->pet)->user)->name ?? 'Unknown' }})</span>
                                         </p>
                                         <p class="text-sm text-gray-500">
                                             {{ $apt->appointment_time->format('H:i') }} - {{ $apt->service_type }}

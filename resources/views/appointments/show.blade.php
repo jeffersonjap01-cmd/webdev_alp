@@ -328,7 +328,7 @@
                     <dl class="space-y-4">
                         <div>
                             <dt class="text-sm font-medium text-gray-500">Nama</dt>
-                            <dd class="mt-1 text-sm text-gray-900">{{ $appointment->user->name ?? 'Unknown' }}</dd>
+                            <dd class="mt-1 text-sm text-gray-900">{{ optional($appointment->user)->name ?? 'Unknown' }}</dd>
                         </div>
                         <div>
                             <dt class="text-sm font-medium text-gray-500">Email</dt>

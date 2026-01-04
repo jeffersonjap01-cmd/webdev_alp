@@ -126,7 +126,7 @@
                             </div>
                             <div class="text-right">
                                 <p class="text-sm text-gray-900">
-                                    {{ $appointment->user->name ?? 'Unknown User' }}
+                                    {{ optional($appointment->user)->name ?? 'Unknown User' }}
                                 </p>
                                 <p class="text-sm text-gray-500">
                                     {{ $appointment->pet->species ?? 'Unknown Species' }}

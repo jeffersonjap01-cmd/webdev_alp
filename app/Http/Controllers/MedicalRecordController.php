@@ -9,8 +9,10 @@ use App\Models\Medication;
 use App\Models\Appointment;
 use App\Models\Pet;
 use App\Models\Doctor;
+use App\Models\Invoice;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class MedicalRecordController extends Controller
 {
@@ -75,30 +77,76 @@ class MedicalRecordController extends Controller
             'medications'    => 'nullable|array',
         ]);
 
-        $record = MedicalRecord::create($validated);
+        // Ensure $record exists after transaction
+        $record = null;
 
-        // Insert diagnoses
-        if (!empty($validated['diagnoses'])) {
-            foreach ($validated['diagnoses'] as $d) {
-                Diagnosis::create([
-                    'medical_record_id' => $record->id,
-                    'diagnosis_name'    => $d['name'],
-                    'description'       => $d['description'] ?? null,
-                ]);
-            }
-        }
+        // Use transaction to ensure related records are created together
+        DB::transaction(function () use ($validated, &$record) {
+            $record = MedicalRecord::create($validated);
 
-        // Insert medications
-        if (!empty($validated['medications'])) {
-            foreach ($validated['medications'] as $m) {
-                Medication::create([
-                    'medical_record_id' => $record->id,
-                    'medicine_name'     => $m['name'],
-                    'dosage'            => $m['dosage'] ?? null,
-                    'frequency'         => $m['frequency'] ?? null,
-                    'duration'          => $m['duration'] ?? null,
-                ]);
+            // Insert diagnoses
+            if (!empty($validated['diagnoses'])) {
+                foreach ($validated['diagnoses'] as $d) {
+                    Diagnosis::create([
+                        'medical_record_id' => $record->id,
+                        'diagnosis_name'    => $d['name'],
+                        'description'       => $d['description'] ?? null,
+                    ]);
+                }
             }
+
+            // Insert medications
+            if (!empty($validated['medications'])) {
+                foreach ($validated['medications'] as $m) {
+                    Medication::create([
+                        'medical_record_id' => $record->id,
+                        'medicine_name'     => $m['name'],
+                        'dosage'            => $m['dosage'] ?? null,
+                        'frequency'         => $m['frequency'] ?? null,
+                        'duration'          => $m['duration'] ?? null,
+                    ]);
+                }
+            }
+
+            // Update appointment status to completed
+            $appointment = Appointment::find($validated['appointment_id']);
+            if ($appointment) {
+                $appointment->status = 'completed';
+                $appointment->save();
+            }
+
+            // Generate basic invoice: base consultation + per-medication fee
+            // Use doctor's configured consultation fee if available, otherwise fallback to env/default
+            $doctor = \App\Models\Doctor::find($validated['doctor_id']);
+            $consultationFee = $doctor && isset($doctor->consultation_fee)
+                ? $doctor->consultation_fee
+                : (int) env('CONSULTATION_FEE', 150000);
+            $medicationUnitFee = (int) env('MEDICATION_FEE', 50000);
+            $medicationFee = !empty($validated['medications']) ? count($validated['medications']) * $medicationUnitFee : 0;
+
+            $subtotal = $consultationFee + $medicationFee;
+            $tax = $subtotal * 0.11; // 11% VAT
+            $total = $subtotal + $tax;
+
+            Invoice::create([
+                'appointment_id' => $validated['appointment_id'],
+                'user_id'        => $appointment->user_id ?? null,
+                'pet_id'         => $validated['pet_id'],
+                'date'           => now(),
+                'subtotal'       => $subtotal,
+                'tax'            => $tax,
+                'discount'       => 0,
+                'total'          => $total,
+                'status'         => 'pending',
+            ]);
+        });
+
+        // Ensure the record was actually persisted (transaction may have rolled back)
+        $record = MedicalRecord::find($record->id);
+        if (! $record) {
+            return redirect()
+                ->route('medical-records')
+                ->with('error', 'Gagal membuat rekam medis. Silakan coba lagi.');
         }
 
         return redirect()
@@ -115,7 +163,7 @@ class MedicalRecordController extends Controller
 
         // Customer can only see their own pet
         if ($user->role === 'customer') {
-            if (!$user->customer || $record->pet->customer_id !== $user->customer->id) {
+            if (!$user->customer || ! $record->pet || $record->pet->customer_id !== $user->customer->id) {
                 abort(403, 'Anda tidak memiliki akses untuk rekam medis ini.');
             }
         }

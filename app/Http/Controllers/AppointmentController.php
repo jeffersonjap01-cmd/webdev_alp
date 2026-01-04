@@ -14,8 +14,7 @@ class AppointmentController extends Controller
     /**
      * Display a listing of appointments
      */
-    public function index()
-    {
+    public function index(){   
         $user = auth()->user();
         $query = Appointment::with(['user', 'pet', 'doctor'])->orderBy('appointment_time', 'desc');
 

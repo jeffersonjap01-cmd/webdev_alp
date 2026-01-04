@@ -39,7 +39,10 @@ class Pet extends Model
      */
     public function customer()
     {
-        return $this->belongsTo(Customer::class, 'user_id');
+        // The `pets.user_id` references the application's `users.id`.
+        // The `customers` table stores `user_id` that references the same user record.
+        // To get the customer profile for a pet, find the customer whose `user_id` matches the pet's `user_id`.
+        return $this->hasOne(Customer::class, 'user_id', 'user_id');
     }
 
     public function medicalRecords()

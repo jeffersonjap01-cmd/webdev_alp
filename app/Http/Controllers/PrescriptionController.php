@@ -6,6 +6,7 @@ use App\Models\Prescription;
 use App\Models\Medication;
 use App\Models\Pet;
 use App\Models\Doctor;
+use App\Models\MedicalRecord;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -53,8 +54,8 @@ class PrescriptionController extends Controller
         $medications = [];
         
         if ($request->has('medical_record_id')) {
-            $medicalRecord = MedicalRecord::with(['medications', 'pet', 'doctor'])->findOrFail($request->medical_record_id);
-            $medications = $medicalRecord->medications;
+            $medicalRecord = MedicalRecord::with(['medications', 'pet', 'doctor'])->find($request->medical_record_id);
+            $medications = $medicalRecord ? $medicalRecord->medications : collect();
         }
         
         return view('prescriptions.create', [
@@ -96,10 +97,6 @@ class PrescriptionController extends Controller
                 $medication->update(['prescription_id' => $prescription->id]);
             }
         }
-
-        return redirect()
-            ->route('prescriptions.show', $prescription)
-            ->with('success', 'Resep berhasil dibuat!');
 
         return redirect()
             ->route('prescriptions.show', $prescription)

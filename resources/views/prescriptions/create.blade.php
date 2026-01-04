@@ -98,7 +98,7 @@
                             <select name="pet_id" id="pet_id" required class="mt-1 block w-full border-gray-300 rounded-md">
                                 <option value="">Pilih Hewan Peliharaan</option>
                                 @foreach($pets as $pet)
-                                    <option value="{{ $pet->id }}">{{ $pet->name }} - {{ $pet->user->name ?? 'No Owner' }}</option>
+                                    <option value="{{ $pet->id }}">{{ $pet->name }} - {{ optional($pet->user)->name ?? 'No Owner' }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -119,14 +119,7 @@
                         </div>
                     </div>
                 @endif
-                                    </option>
-                                @endforeach
-                            @endif
-                        </select>
-                        @error('medical_record_id')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                        <p class="mt-1 text-sm text-gray-500">Opsional. Pilih rekam medis terkait jika ada.</p>
+                <p class="mt-1 text-sm text-gray-500">Opsional. Pilih rekam medis terkait jika ada.</p>
                 
                 <!-- Prescription Details -->
                 <div class="space-y-4">

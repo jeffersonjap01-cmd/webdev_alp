@@ -32,8 +32,10 @@ Route::get('/dashboard', function () {
 // APPOINTMENTS
 // =========================
 Route::middleware('auth')->group(function () {
-    Route::get('/doctor/examination/{appointment}', [ExaminationController::class, 'show'])->name('doctor.examination.show');
-    Route::post('/doctor/examination/{appointment}', [ExaminationController::class, 'store'])->name('doctor.examination.store');
+    Route::middleware('role:doctor')->group(function () {
+        Route::get('/doctor/examination/{appointment}', [ExaminationController::class, 'show'])->name('doctor.examination.show');
+        Route::post('/doctor/examination/{appointment}', [ExaminationController::class, 'store'])->name('doctor.examination.store');
+    });
 
     // All authenticated users can view list and details
     Route::get('/appointments', [AppointmentController::class, 'index'])->name('appointments');
@@ -153,17 +155,35 @@ Route::middleware('auth')->group(function () {
 // MEDICAL RECORDS
 // =========================
 Route::middleware('auth')->group(function () {
-    Route::get('/medical-records', [MedicalRecordController::class, 'index'])->name('medical-records');
-    Route::get('/medical-records/{record}', [MedicalRecordController::class, 'show'])->name('medical-records.show');
+
+    Route::get('/medical-records', [MedicalRecordController::class, 'index'])
+        ->name('medical-records');
+
+    // ✅ STATIC ROUTE HARUS DULUAN
+    Route::middleware('role:admin,doctor')->group(function () {
+        Route::get('/medical-records/create', [MedicalRecordController::class, 'create'])
+            ->name('medical-records.create');
+
+        Route::post('/medical-records', [MedicalRecordController::class, 'store'])
+            ->name('medical-records.store');
+    });
+
+    // ✅ BARU DYNAMIC
+    Route::get('/medical-records/{record}', [MedicalRecordController::class, 'show'])
+        ->name('medical-records.show');
 
     Route::middleware('role:admin,doctor')->group(function () {
-        Route::get('/medical-records/create', [MedicalRecordController::class, 'create'])->name('medical-records.create');
-        Route::post('/medical-records', [MedicalRecordController::class, 'store'])->name('medical-records.store');
-        Route::get('/medical-records/{record}/edit', [MedicalRecordController::class, 'edit'])->name('medical-records.edit');
-        Route::put('/medical-records/{record}', [MedicalRecordController::class, 'update'])->name('medical-records.update');
-        Route::delete('/medical-records/{record}', [MedicalRecordController::class, 'destroy'])->name('medical-records.destroy');
+        Route::get('/medical-records/{record}/edit', [MedicalRecordController::class, 'edit'])
+            ->name('medical-records.edit');
+
+        Route::put('/medical-records/{record}', [MedicalRecordController::class, 'update'])
+            ->name('medical-records.update');
+
+        Route::delete('/medical-records/{record}', [MedicalRecordController::class, 'destroy'])
+            ->name('medical-records.destroy');
     });
 });
+
 
 
 // =========================
@@ -171,7 +191,6 @@ Route::middleware('auth')->group(function () {
 // =========================
 Route::middleware('auth')->group(function () {
     Route::get('/prescriptions', [PrescriptionController::class, 'index'])->name('prescriptions');
-    Route::get('/prescriptions/{prescription}', [PrescriptionController::class, 'show'])->name('prescriptions.show');
 
     Route::middleware('role:admin,doctor')->group(function () {
         Route::get('/prescriptions/create', [PrescriptionController::class, 'create'])->name('prescriptions.create');
@@ -180,6 +199,8 @@ Route::middleware('auth')->group(function () {
         Route::put('/prescriptions/{prescription}', [PrescriptionController::class, 'update'])->name('prescriptions.update');
         Route::delete('/prescriptions/{prescription}', [PrescriptionController::class, 'destroy'])->name('prescriptions.destroy');
     });
+
+    Route::get('/prescriptions/{prescription}', [PrescriptionController::class, 'show'])->name('prescriptions.show');
 });
 
 
@@ -249,4 +270,3 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/reports/vaccinations', [ReportController::class, 'vaccinations'])->name('reports.vaccinations');
     Route::get('/reports/export/{type}', [ReportController::class, 'export'])->name('reports.export');
 });
-
