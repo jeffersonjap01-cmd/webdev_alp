@@ -137,8 +137,8 @@ Route::middleware('auth')->group(function () {
 // =========================
 Route::middleware('auth')->group(function () {
     Route::get('/doctors', [DoctorController::class, 'index'])->name('doctors');
-    Route::get('/doctors/{doctor}', [DoctorController::class, 'show'])->name('doctors.show');
 
+    // pindahkan route admin statis sebelum route dinamis {doctor}
     Route::middleware('role:admin')->group(function () {
         Route::get('/doctors/create', [DoctorController::class, 'create'])->name('doctors.create');
         Route::post('/doctors', [DoctorController::class, 'store'])->name('doctors.store');
@@ -147,6 +147,9 @@ Route::middleware('auth')->group(function () {
         Route::delete('/doctors/{doctor}', [DoctorController::class, 'destroy'])->name('doctors.destroy');
         Route::patch('/doctors/{doctor}/toggle-status', [DoctorController::class, 'toggleStatus'])->name('doctors.toggle-status');
     });
+
+    // route dinamis terakhir supaya tidak menimpa route statis
+    Route::get('/doctors/{doctor}', [DoctorController::class, 'show'])->name('doctors.show');
 });
 
 

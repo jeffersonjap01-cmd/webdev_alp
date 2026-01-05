@@ -152,14 +152,14 @@ class WhatsAppService
             return ['success' => false, 'message' => 'Customer phone not found'];
         }
 
-        $message = "🐾 *VetCare Appointment Reminder*\n\n";
+        $message = "*VetCare Appointment Reminder*\n\n";
         $message .= "Halo {$appointment->user->name},\n\n";
         $message .= "Pengingat untuk appointment:\n";
-        $message .= "🐕 Pet: {$appointment->pet->name}\n";
-        $message .= "📅 Date: " . \Carbon\Carbon::parse($appointment->appointment_time)->format('d M Y, H:i') . "\n";
-        $message .= "👨‍⚕️ Doctor: {$appointment->doctor->name}\n";
-        $message .= "📍 VetCare Clinic\n\n";
-        $message .= "Terima kasih! 🙏";
+        $message .= "Pet: {$appointment->pet->name}\n";
+        $message .= "Date: " . \Carbon\Carbon::parse($appointment->appointment_time)->format('d M Y, H:i') . "\n";
+        $message .= "Doctor: {$appointment->doctor->name}\n";
+        $message .= "VetCare Clinic\n\n";
+        $message .= "Terima kasih! ";
 
         return $this->sendNotification($customerPhone, $message);
     }
@@ -177,14 +177,14 @@ class WhatsAppService
             return ['success' => false, 'message' => 'Customer phone not found'];
         }
 
-        $message = "✅ *Appointment Confirmed - VetCare*\n\n";
+        $message = "*Appointment Confirmed - VetCare*\n\n";
         $message .= "Halo {$appointment->user->name},\n\n";
         $message .= "Appointment Anda telah dikonfirmasi!\n\n";
-        $message .= "📋 Details:\n";
-        $message .= "🐕 Pet: {$appointment->pet->name}\n";
-        $message .= "📅 Date: " . \Carbon\Carbon::parse($appointment->appointment_time)->format('d M Y, H:i') . "\n";
-        $message .= "👨‍⚕️ Doctor: {$appointment->doctor->name}\n";
-        $message .= "⏱️ Duration: {$appointment->duration} minutes\n\n";
+        $message .= "Details:\n";
+        $message .= "Pet: {$appointment->pet->name}\n";
+        $message .= "Date: " . \Carbon\Carbon::parse($appointment->appointment_time)->format('d M Y, H:i') . "\n";
+        $message .= "Doctor: {$appointment->doctor->name}\n";
+        $message .= "Duration: {$appointment->duration} minutes\n\n";
         $message .= "Mohon datang 10 menit lebih awal.\n";
         $message .= "Terima kasih! 🐾";
 

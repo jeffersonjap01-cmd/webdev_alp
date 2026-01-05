@@ -64,7 +64,8 @@ class DoctorController extends Controller
             'status'           => 'inactive',
         ]);
 
-        return redirect()->route('doctors')->with('success', 'Dokter berhasil ditambahkan!');
+        return redirect()->route('doctors.create')->with('success', 'Dokter berhasil ditambahkan!');
+        
     }
 
     /**

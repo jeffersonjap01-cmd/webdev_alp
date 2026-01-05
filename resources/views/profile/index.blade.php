@@ -352,9 +352,7 @@
                             <a href="{{ route('doctors.create') }}" class="flex items-center justify-center px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200">
                                 <i class="fas fa-user-md mr-2"></i> Tambah Doctor
                             </a>
-                            <a href="{{ route('reports.dashboard') }}" class="flex items-center justify-center px-4 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200">
-                                <i class="fas fa-chart-bar mr-2"></i> Lihat Laporan
-                            </a>
+                            
                         @endif
                     </div>
                 </div>
