@@ -353,9 +353,6 @@
                                 <i class="fas fa-pills mr-2"></i> Buat Resep Obat
                             </a>
                         @elseif($user->role === 'admin')
-                            <a href="{{ route('customers.create') }}" class="flex items-center justify-center px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200">
-                                <i class="fas fa-user-plus mr-2"></i> Tambah Customer
-                            </a>
                             <a href="{{ route('doctors.create') }}" class="flex items-center justify-center px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200">
                                 <i class="fas fa-user-md mr-2"></i> Tambah Doctor
                             </a>
