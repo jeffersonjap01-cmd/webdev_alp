@@ -106,21 +106,7 @@
                     @enderror
                 </div>
 
-                <!-- Duration -->
-                <div class="bg-gray-50 p-3 rounded-lg ring-1 ring-blue-50">
-                    <label for="duration" class="block text-sm font-medium text-blue-600">Durasi (menit) *</label>
-                    <select name="duration" id="duration" required class="mt-1 block w-full px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-black bg-white hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-300 sm:text-sm @error('duration') border-red-300 @enderror">
-                        <option value="">Pilih Durasi</option>
-                        <option value="15" {{ old('duration') == '15' ? 'selected' : '' }}>15 menit</option>
-                        <option value="30" {{ old('duration') == '30' ? 'selected' : '' }}>30 menit</option>
-                        <option value="45" {{ old('duration') == '45' ? 'selected' : '' }}>45 menit</option>
-                        <option value="60" {{ old('duration') == '60' ? 'selected' : '' }}>60 menit</option>
-                        <option value="90" {{ old('duration') == '90' ? 'selected' : '' }}>90 menit</option>
-                    </select>
-                    @error('duration')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
+               
 
                 <!-- Notes -->
                 <div class="bg-gray-50 p-3 rounded-lg ring-1 ring-blue-50">
