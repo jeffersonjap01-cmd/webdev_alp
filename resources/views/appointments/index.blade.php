@@ -159,5 +159,110 @@
         {{ $appointments->links() }}
     </div>
     @endif
+
+    <!-- Medical Records Section (Customer Only) -->
+    @if(in_array(auth()->user()->role, ['customer', 'user']))
+    <div class="mt-8">
+        <div class="bg-white shadow rounded-lg">
+            <div class="px-4 py-5 sm:p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-gray-900">Rekam Medis Saya</h2>
+                        <p class="mt-1 text-sm text-gray-600">
+                            Rekam medis yang sudah dibayar dapat diakses di sini
+                        </p>
+                    </div>
+                    <a href="{{ route('medical-records') }}" class="text-sm text-blue-600 hover:text-blue-500 font-medium">
+                        Lihat Semua
+                        <i class="fas fa-arrow-right ml-1"></i>
+                    </a>
+                </div>
+
+                @php
+                    $medicalRecords = \App\Models\MedicalRecord::with(['pet', 'doctor', 'appointment', 'diagnoses'])
+                        ->whereHas('pet', function($q) {
+                            $q->where('user_id', auth()->id());
+                        })
+                        ->latest()
+                        ->take(10)
+                        ->get()
+                        ->filter(function($record) {
+                            // Filter only paid medical records for customer
+                            $invoice = null;
+                            if($record->appointment) {
+                                $invoice = \App\Models\Invoice::where('appointment_id', $record->appointment->id)->first();
+                            }
+                            // Show if no invoice (old records) or if paid
+                            return !$invoice || $invoice->status === 'paid';
+                        })
+                        ->take(5);
+                @endphp
+
+                @if($medicalRecords->count() > 0)
+                <ul class="divide-y divide-gray-200">
+                    @foreach($medicalRecords as $record)
+                    @php
+                        $invoice = null;
+                        if($record->appointment) {
+                            $invoice = \App\Models\Invoice::where('appointment_id', $record->appointment->id)->first();
+                        }
+                        $isPaid = !$invoice || $invoice->status === 'paid';
+                    @endphp
+                    <li class="py-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center flex-1">
+                                <div class="flex-shrink-0">
+                                    <div class="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
+                                        <i class="fas fa-file-medical text-green-600"></i>
+                                    </div>
+                                </div>
+                                <div class="ml-4 flex-1">
+                                    <div class="flex items-center">
+                                        <p class="text-sm font-medium text-gray-900">
+                                            {{ $record->pet->name ?? 'Unknown Pet' }}
+                                        </p>
+                                        @if($invoice && $isPaid)
+                                        <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                                            <i class="fas fa-check-circle mr-1"></i>
+                                            Lunas
+                                        </span>
+                                        @endif
+                                    </div>
+                                    <div class="mt-1 flex items-center text-sm text-gray-500">
+                                        <i class="fas fa-user-md mr-1.5"></i>
+                                        {{ optional($record->doctor)->name ?? 'Unknown Doctor' }}
+                                        <span class="mx-2">•</span>
+                                        <i class="fas fa-calendar mr-1.5"></i>
+                                        {{ $record->created_at->format('d M Y') }}
+                                    </div>
+                                    @if($record->diagnoses && $record->diagnoses->count() > 0)
+                                    <p class="mt-1 text-sm text-gray-600">
+                                        <i class="fas fa-stethoscope mr-1.5"></i>
+                                        {{ $record->diagnoses->first()->diagnosis_name ?? 'No Diagnosis' }}
+                                    </p>
+                                    @endif
+                                </div>
+                            </div>
+                            <div class="ml-4 flex-shrink-0">
+                                <a href="{{ route('medical-records.show', $record) }}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                    <i class="fas fa-eye mr-2"></i>
+                                    Lihat Detail
+                                </a>
+                            </div>
+                        </div>
+                    </li>
+                    @endforeach
+                </ul>
+                @else
+                <div class="text-center py-12">
+                    <i class="fas fa-file-medical text-4xl text-gray-300 mb-4"></i>
+                    <p class="text-gray-500 text-lg">Belum ada rekam medis yang dapat diakses</p>
+                    <p class="text-gray-400 text-sm mt-1">Rekam medis akan muncul di sini setelah pembayaran selesai</p>
+                </div>
+                @endif
+            </div>
+        </div>
+    </div>
+    @endif
 </div>
 @endsection

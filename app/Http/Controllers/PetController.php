@@ -42,6 +42,7 @@ class PetController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'species' => 'required|string|max:255',
+            'species_other' => 'required_if:species,Other|nullable|string|max:255',
             'breed' => 'nullable|string|max:255',
             'age' => 'nullable|numeric|min:0',
             'weight' => 'nullable|numeric|min:0',
@@ -49,9 +50,15 @@ class PetController extends Controller
             'color' => 'nullable|string|max:255',
         ]);
 
+        // Use custom species if "Other" is selected
+        $species = $request->species;
+        if ($species === 'Other' && $request->filled('species_other')) {
+            $species = $request->species_other;
+        }
+
         Pet::create([
             'name' => $request->name,
-            'species' => $request->species,
+            'species' => $species,
             'breed' => $request->breed,
             'age' => $request->age,
             'weight' => $request->weight,
@@ -100,6 +107,7 @@ class PetController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'species' => 'required|string|max:255',
+            'species_other' => 'required_if:species,Other|nullable|string|max:255',
             'breed' => 'nullable|string|max:255',
             'age' => 'nullable|numeric|min:0',
             'weight' => 'nullable|numeric|min:0',
@@ -107,7 +115,14 @@ class PetController extends Controller
             'color' => 'nullable|string|max:255',
         ]);
 
-        $pet->update($request->all());
+        // Use custom species if "Other" is selected
+        $updateData = $request->all();
+        if ($request->species === 'Other' && $request->filled('species_other')) {
+            $updateData['species'] = $request->species_other;
+        }
+        unset($updateData['species_other']); // Remove species_other from update data
+
+        $pet->update($updateData);
 
         return redirect()->route('pets.index')->with('success', 'Hewan berhasil diperbarui.');
     }

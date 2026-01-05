@@ -41,7 +41,8 @@
                 <div>
                     <label for="species" class="block text-sm font-medium text-gray-700">Jenis Hewan *</label>
                     <select name="species" id="species" required
-                            class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md @error('species') border-red-300 @enderror">
+                            class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md @error('species') border-red-300 @enderror"
+                            onchange="toggleSpeciesOther()">
                         <option value="">Pilih jenis hewan</option>
                         <option value="Dog" {{ old('species') == 'Dog' ? 'selected' : '' }}>Anjing</option>
                         <option value="Cat" {{ old('species') == 'Cat' ? 'selected' : '' }}>Kucing</option>
@@ -54,6 +55,16 @@
                     @error('species')
                         <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                     @enderror
+                    <!-- Custom Species Input (shown when "Other" is selected) -->
+                    <div id="species_other_container" style="display: {{ old('species') == 'Other' ? 'block' : 'none' }};" class="mt-2">
+                        <label for="species_other" class="block text-sm font-medium text-gray-700">Sebutkan Jenis Hewan *</label>
+                        <input type="text" name="species_other" id="species_other" value="{{ old('species_other') }}"
+                               class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm @error('species_other') border-red-300 @enderror"
+                               placeholder="Masukkan jenis hewan">
+                        @error('species_other')
+                            <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
                 </div>
 
                 <!-- Breed -->
@@ -131,5 +142,29 @@
             </div>
         </form>
     </div>
-</div>
+    </div>
 @endsection
+
+@push('scripts')
+<script>
+function toggleSpeciesOther() {
+    const speciesSelect = document.getElementById('species');
+    const speciesOtherContainer = document.getElementById('species_other_container');
+    const speciesOtherInput = document.getElementById('species_other');
+    
+    if (speciesSelect.value === 'Other') {
+        speciesOtherContainer.style.display = 'block';
+        speciesOtherInput.required = true;
+    } else {
+        speciesOtherContainer.style.display = 'none';
+        speciesOtherInput.required = false;
+        speciesOtherInput.value = '';
+    }
+}
+
+// Call on page load to handle old input
+document.addEventListener('DOMContentLoaded', function() {
+    toggleSpeciesOther();
+});
+</script>
+@endpush

@@ -193,6 +193,91 @@
                     @endif
                 </div>
             </div>
+
+            <!-- Medical Records -->
+            <div class="bg-white shadow rounded-lg">
+                <div class="px-4 py-5 sm:p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900">Rekam Medis</h3>
+                        <a href="{{ route('medical-records') }}" class="text-sm text-blue-600 hover:text-blue-500">
+                            Lihat Semua
+                        </a>
+                    </div>
+                    
+                    @if($owner->pets)
+                        @php
+                            $medicalRecords = \App\Models\MedicalRecord::with(['pet', 'doctor', 'appointment'])
+                                ->whereHas('pet', function($q) use ($owner) {
+                                    $q->where('customer_id', $owner->id);
+                                })
+                                ->latest()
+                                ->take(5)
+                                ->get();
+                        @endphp
+                        
+                        @if($medicalRecords->count() > 0)
+                        <div class="space-y-3">
+                            @foreach($medicalRecords as $record)
+                            @php
+                                $invoice = null;
+                                if($record->appointment) {
+                                    $invoice = \App\Models\Invoice::where('appointment_id', $record->appointment->id)->first();
+                                }
+                                $isPaid = $invoice && $invoice->status === 'paid';
+                                $isCustomer = auth()->user()->role === 'customer';
+                            @endphp
+                            <div class="flex items-center justify-between p-3 border rounded-lg {{ !$isPaid && $isCustomer ? 'border-red-300 bg-red-50' : 'border-gray-200' }}">
+                                <div class="flex items-center flex-1">
+                                    <div class="flex-shrink-0">
+                                        <div class="h-8 w-8 rounded-full flex items-center justify-center {{ !$isPaid && $isCustomer ? 'bg-red-100' : 'bg-green-100' }}">
+                                            <i class="fas fa-file-medical text-xs {{ !$isPaid && $isCustomer ? 'text-red-600' : 'text-green-600' }}"></i>
+                                        </div>
+                                    </div>
+                                    <div class="ml-3 flex-1">
+                                        <div class="flex items-center gap-2">
+                                            <p class="text-sm font-medium text-gray-900">{{ $record->pet->name }}</p>
+                                            @if(!$isPaid && $isCustomer)
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
+                                                Belum Dibayar
+                                            </span>
+                                            @elseif($isPaid)
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                                                Lunas
+                                            </span>
+                                            @endif
+                                        </div>
+                                        <p class="text-sm text-gray-500">{{ optional($record->doctor)->name ?? 'Unknown Doctor' }}</p>
+                                        <p class="text-xs text-gray-400">{{ $record->created_at->format('d M Y, H:i') }}</p>
+                                    </div>
+                                </div>
+                                <div class="ml-3">
+                                    @if($isPaid || !$isCustomer)
+                                    <a href="{{ route('medical-records.show', $record) }}" class="inline-flex items-center px-3 py-1.5 border border-transparent rounded text-xs font-medium text-white bg-blue-600 hover:bg-blue-700">
+                                        Lihat
+                                    </a>
+                                    @else
+                                    <a href="{{ route('invoices.show', $invoice) }}" class="inline-flex items-center px-3 py-1.5 border border-red-300 rounded text-xs font-medium text-red-700 bg-white hover:bg-red-50">
+                                        Bayar
+                                    </a>
+                                    @endif
+                                </div>
+                            </div>
+                            @endforeach
+                        </div>
+                        @else
+                        <div class="text-center py-8">
+                            <i class="fas fa-file-medical text-4xl text-gray-300 mb-4"></i>
+                            <p class="text-gray-500">Belum ada rekam medis</p>
+                        </div>
+                        @endif
+                    @else
+                    <div class="text-center py-8">
+                        <i class="fas fa-info-circle text-4xl text-gray-300 mb-4"></i>
+                        <p class="text-gray-500">Data tidak tersedia</p>
+                    </div>
+                    @endif
+                </div>
+            </div>
         </div>
 
         <!-- Sidebar -->

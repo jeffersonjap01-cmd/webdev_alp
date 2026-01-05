@@ -61,6 +61,11 @@ class MedicalRecord extends Model
         return $this->belongsTo(Appointment::class);
     }
 
+    public function invoice()
+    {
+        return $this->hasOne(Invoice::class, 'appointment_id', 'appointment_id');
+    }
+
     // Scopes
     public function scopeByPet($query, $petId)
     {

@@ -23,6 +23,7 @@ class Invoice extends Model
         'payment_method',
         'payment_reference',
         'paid_at',
+        'qr_code_image',
     ];
 
     protected $casts = [
@@ -53,6 +54,18 @@ class Invoice extends Model
     public function items()
     {
         return $this->hasMany(InvoiceItem::class);
+    }
+
+    public function medicalRecord()
+    {
+        return $this->hasOneThrough(
+            MedicalRecord::class,
+            Appointment::class,
+            'id', // Foreign key on appointments table
+            'appointment_id', // Foreign key on medical_records table
+            'appointment_id', // Local key on invoices table
+            'id' // Local key on appointments table
+        );
     }
 
     // Scopes

@@ -8,6 +8,7 @@ use App\Http\Controllers\DiagnosisController;
 use App\Http\Controllers\DoctorController;
 use App\Http\Controllers\ExaminationController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\MedicalRecordController;
 use App\Http\Controllers\MedicationController;
 use App\Http\Controllers\PaymentController;
@@ -97,6 +98,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'webLogout'])->name('logout');
 
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
 });
 
 
@@ -259,6 +261,19 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:customer')->group(function () {
         Route::get('/payments/{payment}/pay', [PaymentController::class, 'pay'])->name('payments.pay');
         Route::post('/payments/{payment}/upload-proof', [PaymentController::class, 'uploadProof'])->name('payments.upload-proof');
+    });
+});
+
+// =========================
+// INVOICES
+// =========================
+Route::middleware('auth')->group(function () {
+    Route::get('/invoices', [InvoiceController::class, 'index'])->name('invoices');
+    Route::get('/invoices/{invoice}', [InvoiceController::class, 'show'])->name('invoices.show');
+
+    Route::middleware('role:admin')->group(function () {
+        Route::post('/invoices/{invoice}/upload-qr-code', [InvoiceController::class, 'uploadQrCode'])->name('invoices.upload-qr-code');
+        Route::post('/invoices/{invoice}/approve-payment', [InvoiceController::class, 'approvePayment'])->name('invoices.approve-payment');
     });
 });
 

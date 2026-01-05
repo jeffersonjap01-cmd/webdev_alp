@@ -41,11 +41,9 @@ class ExaminationController extends Controller
 
         $validated = $request->validate([
             'temperature' => 'required|numeric',
-            'weight' => 'required|numeric', // Assuming weight is useful, though model might need update if column exists. Checking MR model, it has temp/heart_rate. Let's stick to MR columns.
+            'weight' => 'nullable|numeric',
             'heart_rate' => 'required|numeric',
             'notes' => 'required|string',
-            'consultation_fee' => 'nullable|numeric|min:0',
-            'medication_fee' => 'nullable|numeric|min:0',
             'diagnoses' => 'required|array|min:1',
             'diagnoses.*.name' => 'required|string',
             'diagnoses.*.description' => 'required|string',
@@ -60,95 +58,25 @@ class ExaminationController extends Controller
         $prescription = null;
         $medicalRecord = null;
 
-        DB::transaction(function () use ($request, $appointment, $validated, &$prescription, &$medicalRecord) {
-            // 1. Create Medical Record (use fields present in medical_records table)
-            $medicalRecord = MedicalRecord::create([
+        // Store examination data in session for medical record creation
+        session([
+            'examination_data' => [
                 'appointment_id' => $appointment->id,
-                'pet_id' => $appointment->pet_id,
-                'doctor_id' => $appointment->doctor_id,
-                'symptoms' => implode("; ", array_map(fn($d) => ($d['name'] ?? '') . ' ' . ($d['description'] ?? ''), $validated['diagnoses'])),
-                'notes' => "Temperature: {$validated['temperature']}, Heart rate: {$validated['heart_rate']}. " . $validated['notes'],
-                'recommendation' => 'Examination and Prescription',
-                'record_date' => now(),
-            ]);
+                'temperature' => $validated['temperature'],
+                'heart_rate' => $validated['heart_rate'],
+                'weight' => $validated['weight'],
+                'notes' => $validated['notes'],
+                'diagnoses' => $request->diagnoses,
+                'medications' => $request->medications ?? [],
+            ]
+        ]);
 
-            // 2. Save Diagnoses
-            foreach ($request->diagnoses as $diag) {
-                Diagnosis::create([
-                    'medical_record_id' => $medicalRecord->id,
-                    'diagnosis_name' => $diag['name'],
-                    'description' => $diag['description'],
-                ]);
-            }
+        // Update appointment status to in_progress (will be completed after medical record creation)
+        $appointment->status = 'in_progress';
+        $appointment->save();
 
-            // 3. Create Prescription if medications exist
-            if (!empty($request->medications)) {
-                $prescription = Prescription::create([
-                    'pet_id' => $appointment->pet_id,
-                    'doctor_id' => $appointment->doctor_id,
-                    'medical_record_id' => $medicalRecord->id,
-                    'date' => now(),
-                    'status' => 'active',
-                    // 'diagnosis' => $medicalRecord->diagnosis, // Optional redundancy
-                    'instructions' => 'Follow medication instructions carefully.',
-                ]);
-
-                foreach ($request->medications as $med) {
-                    Medication::create([
-                        'prescription_id' => $prescription->id,
-                        'medical_record_id' => $medicalRecord->id,
-                        'medicine_name' => $med['name'],
-                        'dosage' => $med['dosage'],
-                        'frequency' => $med['frequency'],
-                        'duration' => $med['duration'],
-                    ]);
-                }
-            }
-
-            // 4. Update Appointment Status
-            $appointment->status = 'completed';
-            $appointment->save();
-
-            // 5. Generate Invoice
-            // Determine consultation and medication fees; prefer manual inputs from the form when provided
-            $doctor = \App\Models\Doctor::find($appointment->doctor_id);
-            $defaultConsultation = $doctor && isset($doctor->consultation_fee)
-                ? $doctor->consultation_fee
-                : (int) env('CONSULTATION_FEE', 150000);
-            $medicationUnitFee = (int) env('MEDICATION_FEE', 50000);
-
-            $consultationFee = $request->filled('consultation_fee') ? (float) $request->consultation_fee : $defaultConsultation;
-            if ($request->filled('medication_fee')) {
-                $medicationFee = (float) $request->medication_fee;
-            } else {
-                $medicationFee = !empty($request->medications) ? count($request->medications) * $medicationUnitFee : 0;
-            }
-
-            $subtotal = $consultationFee + $medicationFee;
-            $tax = $subtotal * 0.11; // 11% VAT
-            $total = $subtotal + $tax;
-
-            $invoice = Invoice::create([
-                'appointment_id' => $appointment->id,
-                'user_id' => $appointment->user_id,
-                'pet_id' => $appointment->pet_id,
-                'date' => now(),
-                'subtotal' => $subtotal,
-                'tax' => $tax,
-                'discount' => 0,
-                'total' => $total,
-                'status' => 'pending',
-            ]);
-
-            // Create Invoice Items logic could go here if InvoiceItem model exists, but trying to keep simple based on request scope.
-            // end transaction
-        });
-
-        // Redirect: if prescription was created, show it; otherwise show medical record
-        if (!empty($prescription) && isset($prescription)) {
-            return redirect()->route('prescriptions.show', $prescription)->with('success', 'Examination completed successfully.');
-        }
-
-        return redirect()->route('medical-records.show', $medicalRecord)->with('success', 'Examination completed successfully.');
+        // Redirect to medical records create page to set consultation fee and finalize
+        return redirect()->route('medical-records.create', ['appointment_id' => $appointment->id])
+            ->with('success', 'Examination completed! Please set the consultation fee and finalize the medical record.');
     }
 }

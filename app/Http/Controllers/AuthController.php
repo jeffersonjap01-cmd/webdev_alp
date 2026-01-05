@@ -121,8 +121,8 @@ class AuthController extends Controller
             ]);
         }
 
-        // Create doctor profile if role is vet
-        if ($validated['role'] === 'vet') {
+        // Create doctor profile if role is vet or doctor
+        if (in_array($validated['role'], ['vet', 'doctor'])) {
             \App\Models\Doctor::create([
                 'user_id' => $user->id,
                 'name' => $validated['name'],

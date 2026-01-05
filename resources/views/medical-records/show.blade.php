@@ -94,7 +94,25 @@
                                     }
                                 @endphp
                                 @if($invoice)
-                                    Rp {{ number_format($invoice->total, 0, ',', '.') }}
+                                    @php
+                                        // Calculate consultation fee (subtotal includes consultation + medication)
+                                        // medication fee = number of medications * 50000
+                                        $medicationCount = optional($record->appointment)->prescriptions->flatMap->medications->count() ?? 0;
+                                        $medicationUnitFee = (int) env('MEDICATION_FEE', 50000);
+                                        $medicationFee = $medicationCount * $medicationUnitFee;
+                                        $consultationFee = $invoice->subtotal - $medicationFee;
+                                    @endphp
+                                    <div class="space-y-1">
+                                        <div>Biaya Konsultasi: Rp {{ number_format($consultationFee, 0, ',', '.') }}</div>
+                                        @if($medicationFee > 0)
+                                        <div>Biaya Obat: Rp {{ number_format($medicationFee, 0, ',', '.') }}</div>
+                                        @endif
+                                        <div>Subtotal: Rp {{ number_format($invoice->subtotal, 0, ',', '.') }}</div>
+                                        @if($invoice->tax > 0)
+                                        <div>Pajak (11%): Rp {{ number_format($invoice->tax, 0, ',', '.') }}</div>
+                                        @endif
+                                        <div class="font-semibold text-lg pt-2 border-t border-gray-200">Total: Rp {{ number_format($invoice->total, 0, ',', '.') }}</div>
+                                    </div>
                                 @else
                                     Tidak disebutkan
                                 @endif
@@ -121,6 +139,71 @@
                     </dl>
                 </div>
             </div>
+
+            <!-- Payment & QR Code Section (Admin Only) -->
+            @if(auth()->user()->role === 'admin')
+            @php
+                $invoice = null;
+                if(optional($record->appointment)->id) {
+                    $invoice = \App\Models\Invoice::where('appointment_id', $record->appointment->id)->first();
+                }
+            @endphp
+            @if($invoice)
+            <div class="bg-white shadow rounded-lg">
+                <div class="px-4 py-5 sm:p-6">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Informasi Pembayaran</h3>
+                    
+                    <!-- Invoice Status -->
+                    <div class="mb-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500 mb-1">Status Pembayaran</dt>
+                                <dd class="mt-1">
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium {{ $invoice->status === 'paid' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                                        {{ $invoice->status === 'paid' ? 'Sudah Dibayar' : 'Belum Dibayar' }}
+                                    </span>
+                                </dd>
+                            </div>
+                            @if($invoice->status !== 'paid')
+                            <form action="{{ route('invoices.approve-payment', $invoice) }}" method="POST" class="inline">
+                                @csrf
+                                <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                                    <i class="fas fa-check-circle mr-2"></i>
+                                    Setujui Pembayaran
+                                </button>
+                            </form>
+                            @else
+                            <div class="text-sm text-gray-500">
+                                Dibayar pada: {{ $invoice->paid_at ? $invoice->paid_at->format('d M Y, H:i') : '-' }}
+                            </div>
+                            @endif
+                        </div>
+                        
+                        <div class="grid grid-cols-1 gap-x-4 gap-y-4 sm:grid-cols-2">
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500">Nomor Invoice</dt>
+                                <dd class="mt-1 text-sm text-gray-900">{{ $invoice->invoice_number }}</dd>
+                            </div>
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500">Total Pembayaran</dt>
+                                <dd class="mt-1 text-sm font-semibold text-gray-900">Rp {{ number_format($invoice->total, 0, ',', '.') }}</dd>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- QR Code Section -->
+                    <div class="border-t border-gray-200 pt-6">
+                        <h4 class="text-md font-medium text-gray-900 mb-3">QR Code Pembayaran</h4>
+                        <div class="inline-block p-4 bg-white border-2 border-gray-200 rounded-lg">
+                            <img src="{{ asset('images/QRIS.jpg') }}" alt="QR Code QRIS" class="w-48 h-48 mx-auto object-contain">
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2">QRIS - QR Code Standar Pembayaran Nasional</p>
+                        <p class="text-xs text-gray-600 mt-1 font-semibold">Total: Rp {{ number_format($invoice->total, 0, ',', '.') }}</p>
+                    </div>
+                </div>
+            </div>
+            @endif
+            @endif
 
             <!-- Prescriptions -->
             @if($record->prescriptions && $record->prescriptions->count() > 0)

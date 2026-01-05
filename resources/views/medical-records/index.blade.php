@@ -33,9 +33,9 @@
                     <label for="pet" class="block text-sm font-medium text-gray-700">Hewan</label>
                     <select name="pet" id="pet" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
                         <option value="">Semua Hewan</option>
-                        @foreach(\App\Models\Pet::with('customer')->get() as $pet)
+                        @foreach(\App\Models\Pet::with('user')->get() as $pet)
                             <option value="{{ $pet->id }}" {{ request('pet') == $pet->id ? 'selected' : '' }}>
-                                    {{ $pet->name }} - {{ $pet->customer->name ?? 'Unknown Customer' }}
+                                    {{ $pet->name }} - {{ $pet->user->name ?? 'Unknown Customer' }}
                             </option>
                         @endforeach
                     </select>
@@ -72,41 +72,78 @@
     <div class="bg-white shadow overflow-hidden sm:rounded-md">
         <ul class="divide-y divide-gray-200">
             @forelse($medicalRecords ?? [] as $record)
+            @php
+                $invoice = null;
+                if($record->appointment) {
+                    $invoice = \App\Models\Invoice::where('appointment_id', $record->appointment->id)->first();
+                }
+                $isPaid = $invoice && $invoice->status === 'paid';
+                $isCustomer = auth()->user()->role === 'customer';
+            @endphp
             <li>
-                <div class="px-4 py-4 sm:px-6">
+                <div class="px-4 py-4 sm:px-6 {{ !$isPaid && $isCustomer ? 'bg-red-50 border-l-4 border-red-500' : '' }}">
                     <div class="flex items-center justify-between">
-                        <a href="{{ route('medical-records.show', $record) }}" class="flex items-center hover:bg-gray-50 flex-1">
+                        @if($isPaid || !$isCustomer)
+                        <a href="{{ route('medical-records.show', $record) }}" class="flex items-center hover:bg-gray-50 flex-1 {{ !$isPaid && $isCustomer ? 'opacity-75' : '' }}">
+                        @else
+                        <div class="flex items-center flex-1 cursor-not-allowed">
+                        @endif
                             <div class="flex-shrink-0">
-                                <div class="h-10 w-10 rounded-full bg-red-100 flex items-center justify-center">
-                                    <i class="fas fa-file-medical text-red-600"></i>
+                                <div class="h-10 w-10 rounded-full {{ !$isPaid && $isCustomer ? 'bg-red-200' : 'bg-red-100' }} flex items-center justify-center">
+                                    <i class="fas fa-file-medical {{ !$isPaid && $isCustomer ? 'text-red-700' : 'text-red-600' }}"></i>
                                 </div>
                             </div>
                             <div class="ml-4">
                                 <div class="flex items-center">
-                                    <p class="text-sm font-medium text-blue-600 truncate">
+                                    <p class="text-sm font-medium {{ !$isPaid && $isCustomer ? 'text-red-700' : 'text-blue-600' }} truncate">
                                         {{ $record->pet->name ?? 'Unknown Pet' }}
                                     </p>
                                     <div class="ml-2 flex-shrink-0 flex">
                                         <p class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
                                             {{ $record->doctor->name ?? 'Unknown Doctor' }}
                                         </p>
+                                        @if($isCustomer && !$isPaid)
+                                        <p class="ml-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                            Belum Dibayar
+                                        </p>
+                                        @elseif($isCustomer && $isPaid)
+                                        <p class="ml-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                            Lunas
+                                        </p>
+                                        @endif
                                     </div>
                                 </div>
                                 <div class="mt-2 sm:flex sm:justify-between">
                                     <div class="sm:flex">
-                                        <p class="flex items-center text-sm text-gray-500">
+                                        <p class="flex items-center text-sm {{ !$isPaid && $isCustomer ? 'text-red-600' : 'text-gray-500' }}">
                                             <i class="fas fa-diagnosis mr-1.5"></i>
                                             {{ $record->diagnoses->first()->diagnosis_name ?? ($record->diagnosis ?? 'No Diagnosis') }}
                                         </p>
-                                        <p class="mt-2 flex items-center text-sm text-gray-500 sm:mt-0 sm:ml-6">
+                                        <p class="mt-2 flex items-center text-sm {{ !$isPaid && $isCustomer ? 'text-red-600' : 'text-gray-500' }} sm:mt-0 sm:ml-6">
                                             <i class="fas fa-calendar mr-1.5"></i>
                                             {{ $record->created_at->format('d M Y') }}
                                         </p>
+                                        @if($isCustomer && !$isPaid && $invoice)
+                                        <p class="mt-2 flex items-center text-sm text-red-700 font-semibold sm:mt-0 sm:ml-6">
+                                            <i class="fas fa-money-bill-wave mr-1.5"></i>
+                                            Total: Rp {{ number_format($invoice->total, 0, ',', '.') }}
+                                        </p>
+                                        @endif
                                     </div>
                                 </div>
                             </div>
+                        @if($isPaid || !$isCustomer)
                         </a>
+                        @else
+                        </div>
+                        @endif
                         <div class="ml-4 flex-shrink-0 flex items-center space-x-2">
+                            @if($isCustomer && !$isPaid && $invoice)
+                            <a href="{{ route('invoices.show', $invoice) }}" class="inline-flex items-center px-3 py-1.5 border border-red-600 rounded-md text-xs font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500" title="Bayar Tagihan">
+                                <i class="fas fa-credit-card mr-1"></i>
+                                Bayar
+                            </a>
+                            @elseif($isPaid || !$isCustomer)
                             <a href="{{ route('medical-records.export-pdf', $record) }}" class="inline-flex items-center px-3 py-1.5 border border-blue-600 rounded-md text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" title="Export to PDF">
                                 <i class="fas fa-file-pdf mr-1"></i>
                                 PDF
@@ -115,6 +152,7 @@
                                 <i class="fas fa-eye mr-1"></i>
                                 Detail
                             </a>
+                            @endif
                         </div>
                     </div>
                 </div>
