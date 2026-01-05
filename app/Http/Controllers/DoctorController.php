@@ -19,7 +19,17 @@ class DoctorController extends Controller
      */
     public function index()
     {
-        $doctors = Doctor::with('user')->latest()->paginate(15);
+        $query = Doctor::with('user');
+        
+        // Non-admin users can only see active doctors
+        if (auth()->check() && auth()->user()->role !== 'admin') {
+            $query->where('status', 'active');
+        } else if (!auth()->check()) {
+            // Guests can only see active doctors
+            $query->where('status', 'active');
+        }
+
+        $doctors = $query->latest()->paginate(15);
         return view('doctors.index', compact('doctors'));
     }
 
