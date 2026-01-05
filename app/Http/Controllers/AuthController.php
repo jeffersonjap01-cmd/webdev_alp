@@ -96,7 +96,7 @@ class AuthController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
-            'role' => 'required|in:admin,vet,user',
+            'role' => 'required|in:admin,doctor,customer',
             'phone' => 'nullable|string|max:20',
             'address' => 'nullable|string',
             'terms' => 'required|accepted',
@@ -110,8 +110,8 @@ class AuthController extends Controller
             'role' => $validated['role'],
         ]);
 
-        // Create customer profile if role is user
-        if ($validated['role'] === 'user') {
+        // Create customer profile if role is customer
+        if ($validated['role'] === 'customer') {
             \App\Models\Customer::create([
                 'user_id' => $user->id,
                 'name' => $validated['name'],
@@ -121,8 +121,8 @@ class AuthController extends Controller
             ]);
         }
 
-        // Create doctor profile if role is vet or doctor
-        if (in_array($validated['role'], ['vet', 'doctor'])) {
+        // Create doctor profile if role is doctor
+        if ($validated['role'] === 'doctor') {
             \App\Models\Doctor::create([
                 'user_id' => $user->id,
                 'name' => $validated['name'],
