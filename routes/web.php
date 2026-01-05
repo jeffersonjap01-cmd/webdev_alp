@@ -99,6 +99,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::patch('/profile/toggle-status', [ProfileController::class, 'toggleStatus'])->name('profile.toggle-status');
 });
 
 

@@ -127,9 +127,16 @@
                             </div>
                             <div class="flex-1 min-w-0">
                                 <p class="text-xs font-medium text-gray-500 uppercase mb-1">Status</p>
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $profileData['doctor_info']['status'] === 'active' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $profileData['doctor_info']['status'] === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }}">
                                     {{ ucfirst($profileData['doctor_info']['status']) }}
                                 </span>
+                                <form action="{{ route('profile.toggle-status') }}" method="POST" class="inline-block ml-2">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button type="submit" class="text-xs font-medium underline focus:outline-none {{ $profileData['doctor_info']['status'] === 'active' ? 'text-red-600 hover:text-red-800' : 'text-green-600 hover:text-green-800' }}">
+                                        {{ $profileData['doctor_info']['status'] === 'active' ? 'Nonaktifkan' : 'Aktifkan' }}
+                                    </button>
+                                </form>
                             </div>
                         </div>
                         @if($profileData['doctor_info']['bio'])

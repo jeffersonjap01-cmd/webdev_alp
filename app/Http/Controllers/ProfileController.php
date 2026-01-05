@@ -67,6 +67,23 @@ class ProfileController extends Controller
     }
 
     /**
+     * Toggle doctor status (Active/Inactive)
+     */
+    public function toggleStatus(Request $request)
+    {
+        $user = Auth::user();
+
+        if ($user->role !== 'doctor' || !$user->doctor) {
+            return redirect()->back()->withErrors(['error' => 'Unauthorized action.']);
+        }
+
+        $user->doctor->toggleStatus();
+        
+        $status = $user->doctor->status === 'active' ? 'aktif' : 'nonaktif';
+        return redirect()->back()->with('success', "Status berhasil diubah menjadi {$status}.");
+    }
+
+    /**
      * Get profile data based on user role.
      */
     private function getProfileData(User $user)
