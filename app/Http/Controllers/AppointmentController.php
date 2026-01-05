@@ -93,7 +93,7 @@ class AppointmentController extends Controller
             'appointment_date' => 'required|date|after_or_equal:today',
             'appointment_time' => 'required',
             'service_type' => 'required|string',
-            'duration' => 'required|integer|min:15|max:120',
+            // 'duration' => 'required|integer|min:15|max:120',
             'notes' => 'nullable|string',
         ]);
 
@@ -114,7 +114,7 @@ class AppointmentController extends Controller
             'doctor_id' => $request->doctor_id,
             'appointment_time' => $appointmentDateTime,
             'service_type' => $request->service_type,
-            'duration' => $request->duration,
+            // 'duration' => $request->duration,
             'status' => 'pending',
             'notes' => $request->notes,
         ]);
